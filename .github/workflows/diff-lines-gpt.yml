@@ -27,7 +27,7 @@ jobs:
           cd "${ESMETA_HOME}"
           git init
           git remote add origin https://github.com/es-meta/esmeta.git
-          git fetch --depth 1 origin d4d80b030e370164f20984ea6a7ee39bc06dba90 ;
+          git fetch --depth 1 origin b49699b44a8438779624f2648a9f16746ac9c4ee ;
           git checkout FETCH_HEAD
       - name: build esmeta
         run: |
@@ -61,11 +61,7 @@ jobs:
             }
           ')
 
-          # Join line numbers with comma or space (whichever format you need)
-          added_joined=$(echo "$added_lines" | paste -sd "," -)
-          added_lines_json="[$added_joined]"
-
-          # Set it as an output value
+          added_lines_json="[$(echo "$added_lines" | paste -sd "," -)]"
           echo "added_lines=$added_lines_json" >> "$GITHUB_OUTPUT"
 
       - name: check newly introduces phrases
