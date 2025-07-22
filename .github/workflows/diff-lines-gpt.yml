@@ -44,7 +44,7 @@ jobs:
         env:
           FILE_PATH: spec.html
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }} # should use github.sha ?
         run: |
           # zero-context diff, limited to the file we care about
           added_lines=$(git diff -U0 --no-color "${BASE_SHA}" "${HEAD_SHA}" -- "${FILE_PATH}" |
