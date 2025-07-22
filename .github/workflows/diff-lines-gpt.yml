@@ -27,7 +27,7 @@ jobs:
           cd "${ESMETA_HOME}"
           git init
           git remote add origin https://github.com/es-meta/esmeta.git
-          git fetch --depth 1 origin b49699b44a8438779624f2648a9f16746ac9c4ee ;
+          git fetch --depth 1 origin a9b543cc0ae8d467f9b67d03a48aeb2494cb57bf ;
           git checkout FETCH_HEAD
       - name: build esmeta
         run: |
