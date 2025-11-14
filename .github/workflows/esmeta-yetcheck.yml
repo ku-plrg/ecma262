@@ -17,7 +17,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install esmeta
-        uses: ./.github/workflows/install-esmeta.yml
+        uses: ./.github/workflows/install-esmeta.yml@esmeta-yetcheck
       - id: collect
         name: List added line numbers
         shell: bash
