@@ -5,6 +5,9 @@ on:
     types: [opened, synchronize]
 
 jobs:
+  install-esmeta:
+    uses: ./.github/workflows/install-esmeta.yml@esmeta-yetcheck
+
   esmeta-new-phrases:
     runs-on: ubuntu-latest
 
@@ -16,8 +19,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Install esmeta
-        uses: ./.github/workflows/install-esmeta.yml@esmeta-yetcheck
       - id: collect
         name: List added line numbers
         shell: bash

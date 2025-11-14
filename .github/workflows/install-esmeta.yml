@@ -30,4 +30,4 @@ jobs:
       - name: Link ecma262
         run: |
           rmdir "${ESMETA_HOME}"/ecma262 \
-          && ln -s "$(pwd)" "${ESMETA_HOME}"/ecma262
+            && ln -s "$(pwd)" "${ESMETA_HOME}"/ecma262
