@@ -3,20 +3,14 @@ name: 'esmeta typecheck'
 on: [pull_request]
 
 jobs:
-  install-esmeta:
-    uses: ./.github/workflows/install-esmeta.yml
-
   esmeta-typecheck:
     name: 'esmeta typecheck'
-    needs: install-esmeta
     runs-on: ubuntu-22.04
-
-    env:
-      ESMETA_HOME: vendor/esmeta
-
     steps:
-      - name: Checkout
+      - name: checkout
         uses: actions/checkout@v4
+      - name: install esmeta
+        uses: ./.github/workflows/esmeta-installer
       - name: typecheck
         run: '"${ESMETA_HOME}"/bin/esmeta tycheck -status -extract:log -tycheck:log -tycheck:ignore=esmeta-ignore.json'
       - name: create logs archive

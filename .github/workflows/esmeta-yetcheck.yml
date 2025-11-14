@@ -5,24 +5,16 @@ on:
     types: [opened, synchronize]
 
 jobs:
-  install-esmeta:
-    uses: ./.github/workflows/install-esmeta.yml
-
-  esmeta-new-phrases:
+  esmeta-yetcheck:
     name: 'esmeta yet phrases detection'
-    needs: install-esmeta
     runs-on: ubuntu-22.04
-
-    env:
-      ESMETA_HOME: vendor/esmeta
-
     steps:
-      - name: Checkout
+      - name: checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - id: collect
-        name: List added line numbers
+      - name: list added line numbers
+        id: collect
         shell: bash
         env:
           FILE_PATH: spec.html
@@ -50,7 +42,8 @@ jobs:
 
           # Set it as an output value
           echo "added_lines=$added_lines_json" >> "$GITHUB_OUTPUT"
-
+      - name: install esmeta
+        uses: ./.github/workflows/esmeta-installer
       - name: check newly introduces phrases
         run: |
           "${ESMETA_HOME}"/bin/esmeta extract \
