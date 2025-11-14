@@ -8,6 +8,7 @@ jobs:
 
   esmeta-typecheck:
     name: 'esmeta typecheck'
+    needs: install-esmeta
     runs-on: ubuntu-22.04
 
     env:
