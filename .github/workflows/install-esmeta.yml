@@ -1,0 +1,33 @@
+name: 'install esmeta'
+
+on:
+  workflow_call:
+
+jobs:
+  esmeta-fetch:
+    runs-on: ubuntu-22.04
+
+    env:
+      ESMETA_VERSION: v0.7.1
+      ESMETA_HOME: vendor/esmeta
+
+    steps:
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Setup SBT
+        uses: sbt/setup-sbt@v1
+      - name: Clone esmeta
+        run: |
+          mkdir -p "${ESMETA_HOME}"
+          git clone --branch $ESMETA_VERSION --depth 1 https://github.com/es-meta/esmeta.git "${ESMETA_HOME}"
+      - name: Build esmeta
+        run: |
+          cd "${ESMETA_HOME}"
+          sbt assembly
+      - name: Link ecma262
+        run: |
+          rmdir "${ESMETA_HOME}"/ecma262 \
+          && ln -s "$(pwd)" "${ESMETA_HOME}"/ecma262

@@ -16,30 +16,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Setup JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 17
-      - name: Setup SBT
-        uses: sbt/setup-sbt@v1
-      - name: download esmeta
-        run: |
-          mkdir -p "${ESMETA_HOME}"
-          cd "${ESMETA_HOME}"
-          git init
-          git remote add origin https://github.com/es-meta/esmeta.git
-          git fetch --depth 1 origin bd58590ef6badabbe71afdefa02dc32274902621 ;# v0.7.1
-          git checkout FETCH_HEAD
-      - name: build esmeta
-        run: |
-          cd "${ESMETA_HOME}"
-          sbt assembly
-      - name: link
-        run: |
-          rmdir "${ESMETA_HOME}"/ecma262 \
-            && ln -s "$(pwd)" "${ESMETA_HOME}"/ecma262
-
+      - name: Install esmeta
+        uses: ./.github/workflows/install-esmeta.yml
       - id: collect
         name: List added line numbers
         shell: bash
