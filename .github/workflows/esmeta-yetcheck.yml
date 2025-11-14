@@ -6,7 +6,7 @@ on:
 
 jobs:
   install-esmeta:
-    uses: ./.github/workflows/install-esmeta.yml@esmeta-yetcheck
+    uses: ./.github/workflows/install-esmeta.yml
 
   esmeta-new-phrases:
     name: 'esmeta yet phrases detection'
