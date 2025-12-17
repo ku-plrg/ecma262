@@ -18477,11 +18477,13 @@
         </emu-alg>
         <emu-grammar>Literal : NumericLiteral</emu-grammar>
         <emu-alg>
-          1. Return @@Trace(~literal~, returning the NumericValue of |NumericLiteral| as defined in <emu-xref href="#sec-literals-numeric-literals"></emu-xref>).
+          1. Let _lit_ be the NumericValue of |NumericLiteral| as defined in <emu-xref href="#sec-literals-numeric-literals"></emu-xref>.
+          1. Return @@Trace(~literal~, returning _lit_).
         </emu-alg>
         <emu-grammar>Literal : StringLiteral</emu-grammar>
         <emu-alg>
-          1. Return @@Trace(~literal~, returning the SV of |StringLiteral| as defined in <emu-xref href="#sec-static-semantics-sv"></emu-xref>).
+          1. Let _lit_ be the SV of |StringLiteral| as defined in <emu-xref href="#sec-static-semantics-sv"></emu-xref>.
+          1. Return @@Trace(~literal~, returning _lit_).
         </emu-alg>
       </emu-clause>
     </emu-clause>
