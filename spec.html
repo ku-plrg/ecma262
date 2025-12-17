@@ -18467,20 +18467,21 @@
         <h1>Runtime Semantics: Evaluation</h1>
         <emu-grammar>Literal : NullLiteral</emu-grammar>
         <emu-alg>
+          1. Perform @@Trace(~literal~, *null*).
           1. Return *null*.
         </emu-alg>
         <emu-grammar>Literal : BooleanLiteral</emu-grammar>
         <emu-alg>
-          1. If |BooleanLiteral| is the token `false`, return *false*.
-          1. If |BooleanLiteral| is the token `true`, return *true*.
+          1. If |BooleanLiteral| is the token `false`, return @@Trace(~literal~, returning *false*).
+          1. If |BooleanLiteral| is the token `true`, return @@Trace(~literal~, returning *true*).
         </emu-alg>
         <emu-grammar>Literal : NumericLiteral</emu-grammar>
         <emu-alg>
-          1. Return the NumericValue of |NumericLiteral| as defined in <emu-xref href="#sec-literals-numeric-literals"></emu-xref>.
+          1. Return @@Trace(~literal~, returning the NumericValue of |NumericLiteral| as defined in <emu-xref href="#sec-literals-numeric-literals"></emu-xref>).
         </emu-alg>
         <emu-grammar>Literal : StringLiteral</emu-grammar>
         <emu-alg>
-          1. Return the SV of |StringLiteral| as defined in <emu-xref href="#sec-static-semantics-sv"></emu-xref>.
+          1. Return @@Trace(~literal~, returning the SV of |StringLiteral| as defined in <emu-xref href="#sec-static-semantics-sv"></emu-xref>).
         </emu-alg>
       </emu-clause>
     </emu-clause>
@@ -20993,7 +20994,7 @@
         1. Let _rRef_ be ? Evaluation of _rightOperand_.
         1. Let _rVal_ be ? GetValue(_rRef_).
         1. Perform @@Trace(~binarypre~, _opText_, _lVal_, _rVal_).
-        1. Return ? @@Trace(~binarypre~, _opText_, _lVal_, _rVal_, passing through ApplyStringOrNumericBinaryOperator(_lVal_, _opText_, _rVal_)).
+        1. Return ? @@Trace(~binarypre~, _opText_, _lVal_, _rVal_, returning ApplyStringOrNumericBinaryOperator(_lVal_, _opText_, _rVal_)).
       </emu-alg>
     </emu-clause>
 
