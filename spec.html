@@ -9463,7 +9463,7 @@
       </emu-alg>
       <emu-grammar>FunctionExpression : `function` `(` FormalParameters `)` `{` FunctionBody `}`</emu-grammar>
       <emu-alg>
-        1. Return InstantiateOrdinaryFunctionExpression of |FunctionExpression| with argument _name_.
+        1. Return @@Trace(~literal~, returning InstantiateOrdinaryFunctionExpression of |FunctionExpression| with argument _name_).
       </emu-alg>
       <emu-grammar>GeneratorExpression : `function` `*` `(` FormalParameters `)` `{` GeneratorBody `}`</emu-grammar>
       <emu-alg>
@@ -23807,7 +23807,7 @@
         FunctionExpression : `function` BindingIdentifier? `(` FormalParameters `)` `{` FunctionBody `}`
       </emu-grammar>
       <emu-alg>
-        1. Return InstantiateOrdinaryFunctionExpression of |FunctionExpression|.
+        1. Return @@Trace(~literal~, returning InstantiateOrdinaryFunctionExpression of |FunctionExpression|).
       </emu-alg>
       <emu-note>
         <p>A *"prototype"* property is automatically created for every function defined using a |FunctionDeclaration| or |FunctionExpression|, to allow for the possibility that the function will be used as a constructor.</p>
