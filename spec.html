@@ -4498,6 +4498,7 @@
               1. Set _V_.[[ReferencedName]] to ? ToPropertyKey(_V_.[[ReferencedName]]).
             1. Return ? <emu-meta effects="user-code">_baseObj_.[[Get]]</emu-meta>(_V_.[[ReferencedName]], GetThisValue(_V_)).
           1. Else,
+            1. Perform @@Trace(~read~, _V_.[[ReferencedName]]).
             1. Let _base_ be _V_.[[Base]].
             1. Assert: _base_ is an Environment Record.
             1. Return ? <emu-meta effects="user-code">_base_.GetBindingValue</emu-meta>(_V_.[[ReferencedName]], _V_.[[Strict]]) (see <emu-xref href="#sec-environment-records"></emu-xref>).
