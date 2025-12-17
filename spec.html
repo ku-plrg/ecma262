@@ -20992,7 +20992,8 @@
         1. Let _lVal_ be ? GetValue(_lRef_).
         1. Let _rRef_ be ? Evaluation of _rightOperand_.
         1. Let _rVal_ be ? GetValue(_rRef_).
-        1. Return ? ApplyStringOrNumericBinaryOperator(_lVal_, _opText_, _rVal_).
+        1. Perform @@Trace(~binarypre~, _opText_, _lVal_, _rVal_).
+        1. Return ? @@Trace(~binarypre~, _opText_, _lVal_, _rVal_, passing through ApplyStringOrNumericBinaryOperator(_lVal_, _opText_, _rVal_)).
       </emu-alg>
     </emu-clause>
 
