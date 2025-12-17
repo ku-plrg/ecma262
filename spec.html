@@ -20455,6 +20455,7 @@
         1. Let _lVal_ be ? GetValue(_lRef_).
         1. Let _rRef_ be ? Evaluation of |ShiftExpression|.
         1. Let _rVal_ be ? GetValue(_rRef_).
+        1. Perform @@Trace(~binarypre~, *"&lt;"*, _lVal_, _rVal_).
         1. Let _r_ be ? IsLessThan(_lVal_, _rVal_, *true*).
         1. If _r_ is *undefined*, return *false*. Otherwise, return _r_.
       </emu-alg>
@@ -20464,6 +20465,7 @@
         1. Let _lVal_ be ? GetValue(_lRef_).
         1. Let _rRef_ be ? Evaluation of |ShiftExpression|.
         1. Let _rVal_ be ? GetValue(_rRef_).
+        1. Perform @@Trace(~binarypre~, *"&gt;"* , _lVal_, _rVal_).
         1. Let _r_ be ? IsLessThan(_rVal_, _lVal_, *false*).
         1. If _r_ is *undefined*, return *false*. Otherwise, return _r_.
       </emu-alg>
@@ -20473,6 +20475,7 @@
         1. Let _lVal_ be ? GetValue(_lRef_).
         1. Let _rRef_ be ? Evaluation of |ShiftExpression|.
         1. Let _rVal_ be ? GetValue(_rRef_).
+        1. Perform @@Trace(~binarypre~, *"&lt;="*, _lVal_, _rVal_).
         1. Let _r_ be ? IsLessThan(_rVal_, _lVal_, *false*).
         1. If _r_ is either *true* or *undefined*, return *false*. Otherwise, return *true*.
       </emu-alg>
@@ -20482,6 +20485,7 @@
         1. Let _lVal_ be ? GetValue(_lRef_).
         1. Let _rRef_ be ? Evaluation of |ShiftExpression|.
         1. Let _rVal_ be ? GetValue(_rRef_).
+        1. Perform @@Trace(~binarypre~, *"&gt;="*, _lVal_, _rVal_).
         1. Let _r_ be ? IsLessThan(_lVal_, _rVal_, *true*).
         1. If _r_ is either *true* or *undefined*, return *false*. Otherwise, return *true*.
       </emu-alg>
@@ -20491,6 +20495,7 @@
         1. Let _lVal_ be ? GetValue(_lRef_).
         1. Let _rRef_ be ? Evaluation of |ShiftExpression|.
         1. Let _rVal_ be ? GetValue(_rRef_).
+        1. Perform @@Trace(~binarypre~, *"instanceof"*,  _lVal_, _rVal_).
         1. Return ? InstanceofOperator(_lVal_, _rVal_).
       </emu-alg>
       <emu-grammar>RelationalExpression : RelationalExpression `in` ShiftExpression</emu-grammar>
@@ -20499,6 +20504,7 @@
         1. Let _lVal_ be ? GetValue(_lRef_).
         1. Let _rRef_ be ? Evaluation of |ShiftExpression|.
         1. Let _rVal_ be ? GetValue(_rRef_).
+        1. Perform @@Trace(~binarypre~, *"in"*, _lVal_, _rVal_).
         1. If _rVal_ is not an Object, throw a *TypeError* exception.
         1. Return ? HasProperty(_rVal_, ? ToPropertyKey(_lVal_)).
       </emu-alg>
@@ -20507,6 +20513,7 @@
         1. Let _privateIdentifier_ be the StringValue of |PrivateIdentifier|.
         1. Let _rRef_ be ? Evaluation of |ShiftExpression|.
         1. Let _rVal_ be ? GetValue(_rRef_).
+        1. Perform @@Trace(~binarypre~, *"in"*, _privateIdentifier_, _rVal_).
         1. If _rVal_ is not an Object, throw a *TypeError* exception.
         1. Let _privateEnv_ be the running execution context's PrivateEnvironment.
         1. Assert: _privateEnv_ is not *null*.
