@@ -20457,7 +20457,7 @@
         1. Let _rVal_ be ? GetValue(_rRef_).
         1. Perform @@Trace(~binarypre~, *"&lt;"*, _lVal_, _rVal_).
         1. Let _r_ be ? IsLessThan(_lVal_, _rVal_, *true*).
-        1. If _r_ is *undefined*, return *false*. Otherwise, return _r_.
+        1. If _r_ is *undefined*, return @@Trace(~binary~, *"&lt;"*, _lVal_, _rVal_, returning *false*). Otherwise, return @@Trace(~binary~, *"&lt;"*, _lVal_, _rVal_, returning _r_).
       </emu-alg>
       <emu-grammar>RelationalExpression : RelationalExpression `&gt;` ShiftExpression</emu-grammar>
       <emu-alg>
@@ -20467,7 +20467,7 @@
         1. Let _rVal_ be ? GetValue(_rRef_).
         1. Perform @@Trace(~binarypre~, *"&gt;"* , _lVal_, _rVal_).
         1. Let _r_ be ? IsLessThan(_rVal_, _lVal_, *false*).
-        1. If _r_ is *undefined*, return *false*. Otherwise, return _r_.
+        1. If _r_ is *undefined*, return @@Trace(~binary~, *"&gt;"*, _lVal_, _rVal_, returning *false*). Otherwise, return @@Trace(~binary~, *"&gt;"*, _lVal_, _rVal_, returning _r_).
       </emu-alg>
       <emu-grammar>RelationalExpression : RelationalExpression `&lt;=` ShiftExpression</emu-grammar>
       <emu-alg>
@@ -20477,7 +20477,7 @@
         1. Let _rVal_ be ? GetValue(_rRef_).
         1. Perform @@Trace(~binarypre~, *"&lt;="*, _lVal_, _rVal_).
         1. Let _r_ be ? IsLessThan(_rVal_, _lVal_, *false*).
-        1. If _r_ is either *true* or *undefined*, return *false*. Otherwise, return *true*.
+        1. If _r_ is either *true* or *undefined*, return @@Trace(~binary~, *"&lt;="*, _lVal_, _rVal_, returning *false*). Otherwise, return @@Trace(~binary~, *"&lt;="*, _lVal_, _rVal_, returning *true*).
       </emu-alg>
       <emu-grammar>RelationalExpression : RelationalExpression `&gt;=` ShiftExpression</emu-grammar>
       <emu-alg>
@@ -20487,7 +20487,7 @@
         1. Let _rVal_ be ? GetValue(_rRef_).
         1. Perform @@Trace(~binarypre~, *"&gt;="*, _lVal_, _rVal_).
         1. Let _r_ be ? IsLessThan(_lVal_, _rVal_, *true*).
-        1. If _r_ is either *true* or *undefined*, return *false*. Otherwise, return *true*.
+        1. If _r_ is either *true* or *undefined*, return @@Trace(~binary~, *"&gt;="*, _lVal_, _rVal_, returning *false*). Otherwise, return @@Trace(~binary~, *"&gt;="*, _lVal_, _rVal_, returning *true*).
       </emu-alg>
       <emu-grammar>RelationalExpression : RelationalExpression `instanceof` ShiftExpression</emu-grammar>
       <emu-alg>
@@ -20496,7 +20496,7 @@
         1. Let _rRef_ be ? Evaluation of |ShiftExpression|.
         1. Let _rVal_ be ? GetValue(_rRef_).
         1. Perform @@Trace(~binarypre~, *"instanceof"*,  _lVal_, _rVal_).
-        1. Return ? InstanceofOperator(_lVal_, _rVal_).
+        1. Return ? @@Trace(~binary~, *"instanceof"*, _lVal_, _rVal_, returning InstanceofOperator(_lVal_, _rVal_)).
       </emu-alg>
       <emu-grammar>RelationalExpression : RelationalExpression `in` ShiftExpression</emu-grammar>
       <emu-alg>
@@ -20506,7 +20506,7 @@
         1. Let _rVal_ be ? GetValue(_rRef_).
         1. Perform @@Trace(~binarypre~, *"in"*, _lVal_, _rVal_).
         1. If _rVal_ is not an Object, throw a *TypeError* exception.
-        1. Return ? HasProperty(_rVal_, ? ToPropertyKey(_lVal_)).
+        1. Return ? @@Trace(~binary~, *"in"*, _lVal_, _rVal_, returning HasProperty(_rVal_, ? ToPropertyKey(_lVal_))).
       </emu-alg>
       <emu-grammar>RelationalExpression : PrivateIdentifier `in` ShiftExpression</emu-grammar>
       <emu-alg>
@@ -20518,8 +20518,8 @@
         1. Let _privateEnv_ be the running execution context's PrivateEnvironment.
         1. Assert: _privateEnv_ is not *null*.
         1. Let _privateName_ be ResolvePrivateIdentifier(_privateEnv_, _privateIdentifier_).
-        1. If PrivateElementFind(_rVal_, _privateName_) is not ~empty~, return *true*.
-        1. Return *false*.
+        1. If PrivateElementFind(_rVal_, _privateName_) is not ~empty~, return  @@Trace(~binary~, *"in"*, _privateIdentifier_, _rVal_, returning *true*).
+        1. Return @@Trace(~binary~, *"in"*, _privateIdentifier_, _rVal_, returning *false*).
       </emu-alg>
     </emu-clause>
 
@@ -21004,7 +21004,7 @@
         1. Let _rRef_ be ? Evaluation of _rightOperand_.
         1. Let _rVal_ be ? GetValue(_rRef_).
         1. Perform @@Trace(~binarypre~, _opText_, _lVal_, _rVal_).
-        1. Return ? @@Trace(~binarypre~, _opText_, _lVal_, _rVal_, returning ApplyStringOrNumericBinaryOperator(_lVal_, _opText_, _rVal_)).
+        1. Return ? @@Trace(~binary~, _opText_, _lVal_, _rVal_, returning ApplyStringOrNumericBinaryOperator(_lVal_, _opText_, _rVal_)).
       </emu-alg>
     </emu-clause>
 
