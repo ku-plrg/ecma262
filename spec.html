@@ -20172,8 +20172,9 @@
         <emu-grammar>UnaryExpression : `void` UnaryExpression</emu-grammar>
         <emu-alg>
           1. Let _expr_ be ? Evaluation of |UnaryExpression|.
-          1. Perform ? GetValue(_expr_).
-          1. Return *undefined*.
+          1. Let _v_ be ? GetValue(_expr_).
+          1. Perform @@Trace(~unarypre~, *"void"*, _v_)
+          1. Return @@Trace(~unary~, *"void"*, _b_, returning *undefined*).
         </emu-alg>
         <emu-note>
           <p>GetValue must be called even though its value is not used because it may have observable side-effects.</p>
@@ -20189,20 +20190,21 @@
         <emu-grammar>UnaryExpression : `typeof` UnaryExpression</emu-grammar>
         <emu-alg>
           1. Let _val_ be ? Evaluation of |UnaryExpression|.
+          1. Perform @@Trace(~unarypre~, *"typeof"*, _val_)
           1. If _val_ is a Reference Record, then
-            1. If IsUnresolvableReference(_val_) is *true*, return *"undefined"*.
+            1. If IsUnresolvableReference(_val_) is *true*, return @@Trace(~unarypre~, *"typeof"*, _val_, returning *"undefined"*).
           1. Set _val_ to ? GetValue(_val_).
-          1. If _val_ is *undefined*, return *"undefined"*.
-          1. If _val_ is *null*, return *"object"*.
-          1. If _val_ is a String, return *"string"*.
-          1. If _val_ is a Symbol, return *"symbol"*.
-          1. If _val_ is a Boolean, return *"boolean"*.
-          1. If _val_ is a Number, return *"number"*.
-          1. If _val_ is a BigInt, return *"bigint"*.
+          1. If _val_ is *undefined*, return @@Trace(~unarypre~, *"typeof"*, _val_, returning *"undefined"*).
+          1. If _val_ is *null*, return @@Trace(~unarypre~, *"typeof"*, _val_, returning *"object"*).
+          1. If _val_ is a String, return @@Trace(~unarypre~, *"typeof"*, _val_, returning *"string"*).
+          1. If _val_ is a Symbol, return @@Trace(~unarypre~, *"typeof"*, _val_, returning *"symbol"*).
+          1. If _val_ is a Boolean, return @@Trace(~unarypre~, *"typeof"*, _val_, returning *"boolean"*).
+          1. If _val_ is a Number, return @@Trace(~unarypre~, *"typeof"*, _val_, returning *"number"*).
+          1. If _val_ is a BigInt, return @@Trace(~unarypre~, *"typeof"*, _val_, returning *"bigint"*).
           1. Assert: _val_ is an Object.
           1. [id="step-typeof-web-compat-insertion-point"] NOTE: This step is replaced in section <emu-xref href="#sec-IsHTMLDDA-internal-slot-typeof"></emu-xref>.
-          1. If _val_ has a [[Call]] internal slot, return *"function"*.
-          1. Return *"object"*.
+          1. If _val_ has a [[Call]] internal slot, return @@Trace(~unarypre~, *"typeof"*, _val_, returning *"function"*).
+          1. Return @@Trace(~unarypre~, *"typeof"*, _val_, returning *"object"*).
         </emu-alg>
       </emu-clause>
     </emu-clause>
@@ -20218,7 +20220,9 @@
         <emu-grammar>UnaryExpression : `+` UnaryExpression</emu-grammar>
         <emu-alg>
           1. Let _expr_ be ? Evaluation of |UnaryExpression|.
-          1. Return ? ToNumber(? GetValue(_expr_)).
+          1. Perform @@Trace(~unarypre~, *"+"*, _expr_)
+          1. Let _r_ be ? ToNumber(? GetValue(_expr_)).
+          1. Return @@Trace(~unary~, *"+"*, _expr_, returning _r_).
         </emu-alg>
       </emu-clause>
     </emu-clause>
@@ -20234,12 +20238,13 @@
         <emu-grammar>UnaryExpression : `-` UnaryExpression</emu-grammar>
         <emu-alg>
           1. Let _expr_ be ? Evaluation of |UnaryExpression|.
+          1. Perform @@Trace(~unarypre~, *"-"*, _expr_)
           1. Let _oldValue_ be ? ToNumeric(? GetValue(_expr_)).
           1. If _oldValue_ is a Number, then
-            1. Return Number::unaryMinus(_oldValue_).
+            1. Return @@Trace(~unary~, *"-"*, _expr_, returning Number::unaryMinus(_oldValue_)).
           1. Else,
             1. Assert: _oldValue_ is a BigInt.
-            1. Return BigInt::unaryMinus(_oldValue_).
+            1. Return @@Trace(~unary~, *"-"*, _expr_, returning BigInt::unaryMinus(_oldValue_)).
         </emu-alg>
       </emu-clause>
     </emu-clause>
@@ -20252,12 +20257,13 @@
         <emu-grammar>UnaryExpression : `~` UnaryExpression</emu-grammar>
         <emu-alg>
           1. Let _expr_ be ? Evaluation of |UnaryExpression|.
+          1. Perform @@Trace(~unarypre~, *"~"*, _expr_)
           1. Let _oldValue_ be ? ToNumeric(? GetValue(_expr_)).
           1. If _oldValue_ is a Number, then
-            1. Return Number::bitwiseNOT(_oldValue_).
+            1. Return @@Trace(~unary~, *"~"*, _expr_, returning Number::bitwiseNOT(_oldValue_)).
           1. Else,
             1. Assert: _oldValue_ is a BigInt.
-            1. Return BigInt::bitwiseNOT(_oldValue_).
+            1. Return @@Trace(~unary~, *"~"*, _expr_, returning BigInt::bitwiseNOT(_oldValue_)).
         </emu-alg>
       </emu-clause>
     </emu-clause>
@@ -20270,9 +20276,10 @@
         <emu-grammar>UnaryExpression : `!` UnaryExpression</emu-grammar>
         <emu-alg>
           1. Let _expr_ be ? Evaluation of |UnaryExpression|.
+          1. Perform @@Trace(~unarypre~, *"!"*, _expr_)
           1. Let _oldValue_ be ToBoolean(? GetValue(_expr_)).
-          1. If _oldValue_ is *true*, return *false*.
-          1. Return *true*.
+          1. If _oldValue_ is *true*, return @@Trace(~unary~, *"!"*, _expr_, returning *false*).
+          1. Return @@Trace(~unary~, *"!"*, _expr_, returning *true*).
         </emu-alg>
       </emu-clause>
     </emu-clause>
