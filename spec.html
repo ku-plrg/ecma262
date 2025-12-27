@@ -4493,14 +4493,10 @@
           1. If IsPropertyReference(_V_) is *true*, then
             1. [id="step-getvalue-toobject"] Let _baseObj_ be ? ToObject(_V_.[[Base]]).
             1. If IsPrivateReference(_V_) is *true*, then
-              1. Let _r_ be PrivateGet(_baseObj_, _V_.[[ReferencedName]]).
-              1. Perform @@Trace(~getfield~, _baseObj_, _V_.[[ReferencedName]], _r_).
-              1. Return ? _r_.
+              1. Return ? PrivateGet(_baseObj_, _V_.[[ReferencedName]]).
             1. If _V_.[[ReferencedName]] is not a property key, then
               1. Set _V_.[[ReferencedName]] to ? ToPropertyKey(_V_.[[ReferencedName]]).
-            1. Let _r_ be <emu-meta effects="user-code">_baseObj_.[[Get]]</emu-meta>(_V_.[[ReferencedName]], GetThisValue(_V_)).
-            1. Perform @@Trace(~getfield~, _baseObj_, _V_.[[ReferencedName]], _r_).
-            1. Return ? _r_.
+            1. Return ? <emu-meta effects="user-code">_baseObj_.[[Get]]</emu-meta>(_V_.[[ReferencedName]], GetThisValue(_V_)).
           1. Else,
             1. Perform @@Trace(~read~, _V_.[[ReferencedName]]).
             1. Let _base_ be _V_.[[Base]].
