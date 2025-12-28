@@ -6532,8 +6532,11 @@
       </dl>
       <emu-alg>
         1. If _argumentsList_ is not present, set _argumentsList_ to a new empty List.
+        1. Perform @@Trace(~invokefunpre~, _F_, _V_, _argumentsList_).
         1. If IsCallable(_F_) is *false*, throw a *TypeError* exception.
-        1. Return ? <emu-meta effects="user-code">_F_.[[Call]]</emu-meta>(_V_, _argumentsList_).
+        1. Let _r_ be <emu-meta effects="user-code">_F_.[[Call]]</emu-meta>(_V_, _argumentsList_).
+        1. Perform @@Trace(~invokefun~, _F_, _V_, _argumentsList_, _r_).
+        1. Return ? _r_.
       </emu-alg>
     </emu-clause>
 
