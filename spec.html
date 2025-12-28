@@ -12985,7 +12985,10 @@
       </dl>
 
       <emu-alg>
-        1. Return ? OrdinaryGet(_O_, _P_, _Receiver_).
+        1. Perform @@Trace(~getfieldpre~, _O_, _P_, _Receiver_).
+        1. Let _r_ be OrdinaryGet(_O_, _P_, _Receiver_).
+        1. Perform @@Trace(~getfield~, _O_, _P_, _Receiver_, _r_).
+        1. Return _r_.
       </emu-alg>
 
       <emu-clause id="sec-ordinaryget" type="abstract operation">
@@ -14585,13 +14588,18 @@
           <dd>an arguments exotic object _args_</dd>
         </dl>
         <emu-alg>
+          1. Perform @@Trace(~getfieldpre~, _args_, _P_, _Receiver_).
           1. Let _map_ be _args_.[[ParameterMap]].
           1. Let _isMapped_ be ! HasOwnProperty(_map_, _P_).
           1. If _isMapped_ is *false*, then
-            1. Return ? OrdinaryGet(_args_, _P_, _Receiver_).
+            1. Let _r_ be OrdinaryGet(_args_, _P_, _Receiver_, _r_).
+            1. Perform @@Trace(~getfield~, _args_, _P_, _Receiver_, _r_).
+            1. Return ? _r_.
           1. Else,
             1. Assert: _map_ contains a formal parameter mapping for _P_.
-            1. Return ! Get(_map_, _P_).
+            1. Let _r_ be Get(_map_, _P_).
+            1. Perform @@Trace(~getfield~, _args_, _P_, _Receiver_, _r_).
+            1. Return ! _r_.
         </emu-alg>
       </emu-clause>
 
@@ -14849,11 +14857,16 @@
           <dd>a TypedArray _O_</dd>
         </dl>
         <emu-alg>
+          1. Perform @@Trace(~getfieldpre~, _O_, _P_, _Receiver_).
           1. If _P_ is a String, then
             1. Let _numericIndex_ be CanonicalNumericIndexString(_P_).
             1. If _numericIndex_ is not *undefined*, then
-              1. Return TypedArrayGetElement(_O_, _numericIndex_).
-          1. Return ? OrdinaryGet(_O_, _P_, _Receiver_).
+              1. Let _r_ be TypedArrayGetElement(_O_, _numericIndex_).
+              1. Perform @@Trace(~getfield~, _O_, _P_, _Receiver_, _r_).
+              1. Return _r_.
+          1. Let _r_ be OrdinaryGet(_O_, _P_, _Receiver_).
+          1. Perform @@Trace(~getfield~, _O_, _P_, _Receiver_, _r_).
+          1. Return ? _r_.
         </emu-alg>
       </emu-clause>
 
@@ -15933,13 +15946,16 @@
         <dd>a Proxy exotic object _O_</dd>
       </dl>
       <emu-alg>
+        1. Perform @@Trace(~getfieldpre~, _O_, _P_, _Receiver_).
         1. Perform ? ValidateNonRevokedProxy(_O_).
         1. Let _target_ be _O_.[[ProxyTarget]].
         1. Let _handler_ be _O_.[[ProxyHandler]].
         1. Assert: _handler_ is an Object.
         1. Let _trap_ be ? GetMethod(_handler_, *"get"*).
         1. If _trap_ is *undefined*, then
-          1. Return ? <emu-meta effects="user-code">_target_.[[Get]]</emu-meta>(_P_, _Receiver_).
+          1. Let _r_ be <emu-meta effects="user-code">_target_.[[Get]]</emu-meta>(_P_, _Receiver_).
+          1. Perform @@Trace(~getfield~, _O_, _P_, _Receiver_, _r_).
+          1. Return _r_.
         1. Let _trapResult_ be ? Call(_trap_, _handler_, « _target_, _P_, _Receiver_ »).
         1. Let _targetDesc_ be ? <emu-meta effects="user-code">_target_.[[GetOwnProperty]]</emu-meta>(_P_).
         1. If _targetDesc_ is not *undefined* and _targetDesc_.[[Configurable]] is *false*, then
@@ -15947,6 +15963,7 @@
             1. If SameValue(_trapResult_, _targetDesc_.[[Value]]) is *false*, throw a *TypeError* exception.
           1. If IsAccessorDescriptor(_targetDesc_) is *true* and _targetDesc_.[[Get]] is *undefined*, then
             1. If _trapResult_ is not *undefined*, throw a *TypeError* exception.
+        1. Perform @@Trace(~getfield~, _O_, _P_, _Receiver_, _trapResult_).
         1. Return _trapResult_.
       </emu-alg>
       <emu-note>
