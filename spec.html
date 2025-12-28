@@ -20259,7 +20259,7 @@
         <emu-grammar>UnaryExpression : `-` UnaryExpression</emu-grammar>
         <emu-alg>
           1. Let _expr_ be ? Evaluation of |UnaryExpression|.
-          1. Perform @@Trace(~unarypre~, *"-"*, _expr_)
+          1. Perform @@Trace(~unarypre~, *"-"*, _expr_).
           1. Let _oldValue_ be ? ToNumeric(? GetValue(_expr_)).
           1. If _oldValue_ is a Number, then
             1. Return @@Trace(~unary~, *"-"*, _expr_, returning Number::unaryMinus(_oldValue_)).
