@@ -10407,6 +10407,7 @@
           <emu-alg>
             1. Assert: _envRec_ does not already have a binding for _N_.
             1. Create a mutable binding in _envRec_ for _N_ and record that it is uninitialized. If _D_ is *true*, record that the newly created binding may be deleted by a subsequent DeleteBinding call.
+            1. Perform @@Trace(~declare~, _N_).
             1. Return ~unused~.
           </emu-alg>
         </emu-clause>
@@ -10428,6 +10429,7 @@
           <emu-alg>
             1. Assert: _envRec_ does not already have a binding for _N_.
             1. Create an immutable binding in _envRec_ for _N_ and record that it is uninitialized. If _S_ is *true*, record that the newly created binding is a strict binding.
+            1. Perform @@Trace(~declare~, _N_).
             1. Return ~unused~.
           </emu-alg>
         </emu-clause>
@@ -10661,6 +10663,7 @@
           <emu-alg>
             1. Let _bindingObject_ be _envRec_.[[BindingObject]].
             1. Perform ? DefinePropertyOrThrow(_bindingObject_, _N_, PropertyDescriptor { [[Value]]: *undefined*, [[Writable]]: *true*, [[Enumerable]]: *true*, [[Configurable]]: _D_ }).
+            1. Perform @@Trace(~declare~, _N_).
             1. Return ~unused~.
           </emu-alg>
           <emu-note>
@@ -11084,6 +11087,7 @@
           <emu-alg>
             1. Let _DclRec_ be _envRec_.[[DeclarativeRecord]].
             1. If ! _DclRec_.HasBinding(_N_) is *true*, throw a *TypeError* exception.
+            1. Perform @@Trace(~declare~, _N_).
             1. Return ! _DclRec_.CreateMutableBinding(_N_, _D_).
           </emu-alg>
         </emu-clause>
@@ -11105,6 +11109,7 @@
           <emu-alg>
             1. Let _DclRec_ be _envRec_.[[DeclarativeRecord]].
             1. If ! _DclRec_.HasBinding(_N_) is *true*, throw a *TypeError* exception.
+            1. Perform @@Trace(~declare~, _N_).
             1. Return ! _DclRec_.CreateImmutableBinding(_N_, _S_).
           </emu-alg>
         </emu-clause>
@@ -11386,6 +11391,7 @@
               1. Let _desc_ be the PropertyDescriptor { [[Value]]: _V_ }.
             1. Perform ? DefinePropertyOrThrow(_globalObject_, _N_, _desc_).
             1. [id="step-createglobalfunctionbinding-set"] Perform ? Set(_globalObject_, _N_, _V_, *false*).
+            1. Perform @@Trace(~declare~, _N_).
             1. Return ~unused~.
           </emu-alg>
           <emu-note>
