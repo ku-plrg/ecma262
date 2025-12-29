@@ -22512,6 +22512,7 @@
           1. Let _exprRef_ be Completion(Evaluation of _expr_).
           1. Set the running execution context's LexicalEnvironment to _oldEnv_.
           1. Let _exprValue_ be ? GetValue(? _exprRef_).
+          1. Perform @@Trace(~forinobject~, _exprValue_).
           1. If _iterationKind_ is ~enumerate~, then
             1. If _exprValue_ is either *undefined* or *null*, then
               1. Return Completion Record { [[Type]]: ~break~, [[Value]]: ~empty~, [[Target]]: ~empty~ }.
