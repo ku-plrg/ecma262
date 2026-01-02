@@ -4527,10 +4527,15 @@
           1. If IsPropertyReference(_V_) is *true*, then
             1. [id="step-putvalue-toobject"] Let _baseObj_ be ? ToObject(_V_.[[Base]]).
             1. If IsPrivateReference(_V_) is *true*, then
-              1. Return ? PrivateSet(_baseObj_, _V_.[[ReferencedName]], _W_).
+              1. Perform @@Trace(~putfieldpre~, _baseObj_, _V_.[[ReferencedName]], _W_).
+              1. Let _r_ be PrivateSet(_baseObj_, _V_.[[ReferencedName]], _W_).
+              1. Perform @@Trace(~putfield~, _baseObj_, _V_.[[ReferencedName]], _W_, _r_).
+              1. Return ? _r_.
             1. If _V_.[[ReferencedName]] is not a property key, then
               1. Set _V_.[[ReferencedName]] to ? ToPropertyKey(_V_.[[ReferencedName]]).
+            1. Perform @@Trace(~putfieldpre~, _baseObj_, _V_.[[ReferencedName]], _W_).
             1. Let _succeeded_ be ? <emu-meta effects="user-code">_baseObj_.[[Set]]</emu-meta>(_V_.[[ReferencedName]], _W_, GetThisValue(_V_)).
+            1. Perform @@Trace(~putfield~, _baseObj_, _V_.[[ReferencedName]], _W_, _succeeded_).
             1. If _succeeded_ is *false* and _V_.[[Strict]] is *true*, throw a *TypeError* exception.
             1. Return ~unused~.
           1. Else,
@@ -13040,9 +13045,7 @@
         <dd>an ordinary object _O_</dd>
       </dl>
       <emu-alg>
-        1. Perform @@Trace(~putfieldpre~, _O_, _P_, _V_, _Receiver_).
         1. Let _r_ be OrdinarySet(_O_, _P_, _V_, _Receiver_).
-        1. Perform @@Trace(~putfield~, _O_, _P_, _V_, _Receiver_, _r_).
         1. Return ? _r_.
       </emu-alg>
 
@@ -14629,7 +14632,6 @@
           <dd>an arguments exotic object _args_</dd>
         </dl>
         <emu-alg>
-          1. Perform @@Trace(~putfieldpre~, _args_, _P_, _V_, _Receiver_).
           1. If SameValue(_args_, _Receiver_) is *false*, then
             1. Let _isMapped_ be *false*.
           1. Else,
@@ -14639,7 +14641,6 @@
             1. Assert: The following Set will succeed, since formal parameters mapped by arguments objects are always writable.
             1. Perform ! Set(_map_, _P_, _V_, *false*).
           1. Let _r_ be OrdinarySet(_args_, _P_, _V_, _Receiver_).
-          1. Perform @@Trace(~putfield~, _args_, _P_, _V_, _Receiver_, _r_).
           1. Return ? _r_.
         </emu-alg>
       </emu-clause>
@@ -14899,19 +14900,15 @@
           <dd>a TypedArray _O_</dd>
         </dl>
         <emu-alg>
-          1. Perform @@Trace(~putfieldpre~, _O_, _P_, _V_, _Receiver_).
           1. If _P_ is a String, then
             1. Let _numericIndex_ be CanonicalNumericIndexString(_P_).
             1. If _numericIndex_ is not *undefined*, then
               1. If SameValue(_O_, _Receiver_) is *true*, then
                 1. Perform ? TypedArraySetElement(_O_, _numericIndex_, _V_).
-                1. Perform @@Trace(~putfield~, _O_, _P_, _V_, _Receiver_, *true*).
                 1. Return *true*.
               1. If IsValidIntegerIndex(_O_, _numericIndex_) is *false*, then
-                1. Perform @@Trace(~putfield~, _O_, _P_, _V_, _Receiver_, *true*).
                 1. return *true*.
           1. Let _r_ be OrdinarySet(_O_, _P_, _V_, _Receiver_).
-          1. Perform @@Trace(~putfield~, _O_, _P_, _V_, _Receiver_, _r_).
           1. Return ? _r_.
         </emu-alg>
       </emu-clause>
@@ -15415,8 +15412,6 @@
           <dd>a module namespace exotic object</dd>
         </dl>
         <emu-alg>
-          1. Perform @@Trace(~putfieldpre~, _O_, _P_, _V_, _Receiver_).
-          1. Perform @@Trace(~putfield~, _O_, _P_, _V_, _Receiver_, *false*).
           1. Return *false*.
         </emu-alg>
       </emu-clause>
@@ -16016,7 +16011,6 @@
         <dd>a Proxy exotic object _O_</dd>
       </dl>
       <emu-alg>
-        1. Perform ? @@Trace(~putfieldpre~, _O_, _P_, _V_, _Receiver_).
         1. Perform ? ValidateNonRevokedProxy(_O_).
         1. Let _target_ be _O_.[[ProxyTarget]].
         1. Let _handler_ be _O_.[[ProxyHandler]].
@@ -16024,11 +16018,9 @@
         1. Let _trap_ be ? GetMethod(_handler_, *"set"*).
         1. If _trap_ is *undefined*, then
           1. Let _r_ be <emu-meta effects="user-code">_target_.[[Set]]</emu-meta>(_P_, _V_, _Receiver_).
-          1. Perform @@Trace(~putfield~, _O_, _P_, _V_, _Receiver_, _r_).
           1. Return ? _r_.
         1. Let _booleanTrapResult_ be ToBoolean(? Call(_trap_, _handler_, « _target_, _P_, _V_, _Receiver_ »)).
         1. If _booleanTrapResult_ is *false*, then
-          1. Perform @@Trace(~putfield~, _O_, _P_, _V_, _Receiver_, _booleanTrapResult_).
           1. return *false*.
         1. Let _targetDesc_ be ? <emu-meta effects="user-code">_target_.[[GetOwnProperty]]</emu-meta>(_P_).
         1. If _targetDesc_ is not *undefined* and _targetDesc_.[[Configurable]] is *false*, then
@@ -16036,7 +16028,6 @@
             1. If SameValue(_V_, _targetDesc_.[[Value]]) is *false*, throw a *TypeError* exception.
           1. If IsAccessorDescriptor(_targetDesc_) is *true*, then
             1. If _targetDesc_.[[Set]] is *undefined*, throw a *TypeError* exception.
-        1. Perform @@Trace(~putfield~, _O_, _P_, _V_, _Receiver_, _booleanTrapResult_).
         1. Return *true*.
       </emu-alg>
       <emu-note>
