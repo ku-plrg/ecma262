@@ -21,5 +21,5 @@ jobs:
         run: |
           "${ESMETA_HOME}"/bin/esmeta yet-check \
             -status \
-            -yet-check:github-action \
+            -yet-check:github-alert \
             "${BASE_SHA}" "${HEAD_SHA}"
