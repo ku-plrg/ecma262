@@ -20220,7 +20220,7 @@
         <emu-alg>
           1. Let _expr_ be ? Evaluation of |UnaryExpression|.
           1. Let _v_ be ? GetValue(_expr_).
-          1. Perform @@Trace(~unarypre~, *"void"*, _v_)
+          1. Perform @@Trace(~unarypre~, *"void"*, _v_).
           1. Return @@Trace(~unary~, *"void"*, _b_, returning *undefined*).
         </emu-alg>
         <emu-note>
@@ -20267,7 +20267,7 @@
         <emu-grammar>UnaryExpression : `+` UnaryExpression</emu-grammar>
         <emu-alg>
           1. Let _expr_ be ? Evaluation of |UnaryExpression|.
-          1. Perform @@Trace(~unarypre~, *"+"*, _expr_)
+          1. Perform @@Trace(~unarypre~, *"+"*, _expr_).
           1. Let _r_ be ? ToNumber(? GetValue(_expr_)).
           1. Return @@Trace(~unary~, *"+"*, _expr_, returning _r_).
         </emu-alg>
@@ -20304,7 +20304,7 @@
         <emu-grammar>UnaryExpression : `~` UnaryExpression</emu-grammar>
         <emu-alg>
           1. Let _expr_ be ? Evaluation of |UnaryExpression|.
-          1. Perform @@Trace(~unarypre~, *"~"*, _expr_)
+          1. Perform @@Trace(~unarypre~, *"~"*, _expr_).
           1. Let _oldValue_ be ? ToNumeric(? GetValue(_expr_)).
           1. If _oldValue_ is a Number, then
             1. Return @@Trace(~unary~, *"~"*, _expr_, returning Number::bitwiseNOT(_oldValue_)).
@@ -20323,7 +20323,7 @@
         <emu-grammar>UnaryExpression : `!` UnaryExpression</emu-grammar>
         <emu-alg>
           1. Let _expr_ be ? Evaluation of |UnaryExpression|.
-          1. Perform @@Trace(~unarypre~, *"!"*, _expr_)
+          1. Perform @@Trace(~unarypre~, *"!"*, _expr_).
           1. Let _oldValue_ be ToBoolean(? GetValue(_expr_)).
           1. If _oldValue_ is *true*, return @@Trace(~unary~, *"!"*, _expr_, returning *false*).
           1. Return @@Trace(~unary~, *"!"*, _expr_, returning *true*).
