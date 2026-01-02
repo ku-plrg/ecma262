@@ -14,7 +14,7 @@ runs:
       shell: bash
       run: |
         # v0.7.1
-        echo "ESMETA_VERSION=7f8256d542f60a8e094ec4d82f88ea078f897c1e" >> $GITHUB_ENV
+        echo "ESMETA_VERSION=b8c40e84c2f1d8d3033c1a2cffc9c4cf295c94a4" >> $GITHUB_ENV
         echo "ESMETA_HOME=vendor/esmeta" >> $GITHUB_ENV
     - name: clone esmeta
       shell: bash
