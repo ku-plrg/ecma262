@@ -291,7 +291,7 @@
   <p>A conforming implementation of ECMAScript may support program and regular expression syntax not described in this specification. In particular, a conforming implementation of ECMAScript may support program syntax that makes use of any “future reserved words” noted in subclause <emu-xref href="#sec-keywords-and-reserved-words"></emu-xref> of this specification.</p>
   <p>A conforming implementation of ECMAScript must not implement any extension that is listed as a Forbidden Extension in subclause <emu-xref href="#sec-forbidden-extensions"></emu-xref>.</p>
   <p>A conforming implementation of ECMAScript must not redefine any facilities that are not implementation-defined, implementation-approximated, or host-defined.</p>
-  <p>A conforming implementation of ECMAScript may choose to implement or not implement <dfn>Normative Optional</dfn> subclauses. If any Normative Optional behaviour is implemented, all of the behaviour in the containing Normative Optional clause must be implemented. A Normative Optional clause is denoted in this specification with the words "Normative Optional" in a coloured box, as shown below.</p>
+  <p>A conforming implementation of ECMAScript may choose to implement or not implement <dfn>Normative Optional</dfn> subclauses, unless otherwise indicated. Web browsers are generally required to implement all normative optional subclauses. (See Annex <emu-xref href="#sec-additional-ecmascript-features-for-web-browsers"></emu-xref>.) If any Normative Optional behaviour is implemented, all of the behaviour in the containing Normative Optional clause must be implemented. A Normative Optional clause is denoted in this specification with the words "Normative Optional" in a coloured box, as shown below.</p>
 
   <emu-clause id="sec-conformance-normative-optional" oldids="sec-conformance.normative-optional" example normative-optional>
     <h1>Example Normative Optional Clause Heading</h1>
@@ -22947,12 +22947,9 @@
       <emu-grammar>LabelledItem : FunctionDeclaration</emu-grammar>
       <ul>
         <li>
-          It is a Syntax Error if any source text is matched by this production.
+          It is a Syntax Error if any source text is matched by this production<span normative-optional>, unless that source text is non-strict code and the host is a web browser or otherwise supports <emu-xref href="#sec-labelled-function-declarations" title></emu-xref></span>.
         </li>
       </ul>
-      <emu-note>
-        <p>An alternative definition for this rule is provided in <emu-xref href="#sec-labelled-function-declarations"></emu-xref>.</p>
-      </emu-note>
     </emu-clause>
 
     <emu-clause id="sec-islabelledfunction" type="abstract operation">
@@ -23677,7 +23674,7 @@
         1. Return ~empty~.
       </emu-alg>
       <emu-note>
-        <p>An alternative semantics is provided in <emu-xref href="#sec-block-level-function-declarations-web-legacy-compatibility-semantics"></emu-xref>.</p>
+        <p>An alternative semantics is provided in <emu-xref href="#sec-block-level-function-declarations-web-legacy-compatibility-semantics"></emu-xref> at step <emu-xref href="#step-functiondeclarationinstantiation-alt-funcdecl-eval"></emu-xref> of FunctionDeclarationInstantiation, step <emu-xref href="#step-globaldeclarationinstantiation-alt-funcdecl-eval"></emu-xref> of GlobalDeclarationInstantiation, and step <emu-xref href="#step-evaldeclarationinstantiation-alt-funcdecl-eval"></emu-xref> of EvalDeclarationInstantiation.</p>
       </emu-note>
       <emu-grammar>FunctionDeclaration : `function` `(` FormalParameters `)` `{` FunctionBody `}`</emu-grammar>
       <emu-alg>
@@ -27334,7 +27331,7 @@
             <img alt="A module graph in which module A depends on module B, and module B depends on module C" width="60" height="198" src="img/module-graph-simple.svg">
           </emu-figure>
 
-          <p>Let's first assume that there are no error conditions. When a host first calls _A_.LoadRequestedModules(), this will complete successfully by assumption, and recursively load the dependencies of _B_ and _C_ as well (respectively, _C_ and none), and then set _A_.[[Status]] = _B_.[[Status]] = _C_.[[Status]] = ~unlinked~. Then, when the host calls _A_.Link(), it will complete successfully (again by assumption) such that _A_.[[Status]] = _B_.[[Status]] = _C_.[[Status]] = linked. These preparatory steps can be performed at any time. Later, when the host is ready to incur any possible side effects of the modules, it can call _A_.Evaluate(), which will complete successfully, returning a Promise resolving to *undefined* (again by assumption), recursively having evaluated first _C_ and then _B_. Each module's [[Status]] at this point will be ~evaluated~.</p>
+          <p>Let's first assume that there are no error conditions. When a host first calls _A_.LoadRequestedModules(), this will complete successfully by assumption, and recursively load the dependencies of _B_ and _C_ as well (respectively, _C_ and none), and then set _A_.[[Status]] = _B_.[[Status]] = _C_.[[Status]] = ~unlinked~. Then, when the host calls _A_.Link(), it will complete successfully (again by assumption) such that _A_.[[Status]] = _B_.[[Status]] = _C_.[[Status]] = ~linked~. These preparatory steps can be performed at any time. Later, when the host is ready to incur any possible side effects of the modules, it can call _A_.Evaluate(), which will complete successfully, returning a Promise resolving to *undefined* (again by assumption), recursively having evaluated first _C_ and then _B_. Each module's [[Status]] at this point will be ~evaluated~.</p>
 
           <p>Consider then cases involving linking errors, after a successful call to _A_.LoadRequestedModules(). If InnerModuleLinking of _C_ succeeds but, thereafter, fails for _B_, for example because it imports something that _C_ does not provide, then the original _A_.Link() will fail, and both _A_ and _B_'s [[Status]] remain ~unlinked~. _C_'s [[Status]] has become ~linked~, though.</p>
 
@@ -51783,6 +51780,8 @@ THH:mm:ss.sss
 <emu-annex id="sec-additional-ecmascript-features-for-web-browsers" namespace="annexB" normative>
   <h1>Additional ECMAScript Features for Web Browsers</h1>
   <p>The ECMAScript language syntax and semantics defined in this annex are required when the ECMAScript host is a web browser. The content of this annex is normative but optional if the ECMAScript host is not a web browser.</p>
+  <p>Some features defined in this annex are specified in this annex, and some are specified in the main body of this document.</p>
+  <p>When a feature is specified in the main body, each point where it affects the document is marked with the words "Normative Optional" in a coloured box. Moreover, where the feature involves particular wording in an algorithm or early error rule, this is guarded by the condition that “<dfn variants="otherwise supports">the host supports</dfn>” the relevant feature. Web browsers are required to support all such features.</p>
   <emu-note>
     <p>This annex describes various legacy features and other characteristics of web browser ECMAScript hosts. All of the language features and behaviours specified in this annex have one or more undesirable characteristics and in the absence of legacy usage would be removed from this specification. However, the usage of these features by large numbers of existing web pages means that web browsers must continue to support them. The specifications in this annex define the requirements for interoperable implementations of these legacy features.</p>
     <p>These features are not considered part of the core ECMAScript language. Programmers should not use or assume the existence of these features and behaviours when writing new ECMAScript code. ECMAScript implementations are discouraged from implementing these features unless the implementation is part of a web browser or is required to run the same legacy ECMAScript code that web browsers encounter.</p>
@@ -52504,13 +52503,7 @@ THH:mm:ss.sss
 
     <emu-annex id="sec-labelled-function-declarations">
       <h1>Labelled Function Declarations</h1>
-      <p>Prior to ECMAScript 2015, the specification of |LabelledStatement| did not allow for the association of a statement label with a |FunctionDeclaration|. However, a labelled |FunctionDeclaration| was an allowable extension for non-strict code and most browser-hosted ECMAScript implementations supported that extension. In ECMAScript 2015 and later, the grammar production for |LabelledStatement| permits use of |FunctionDeclaration| as a |LabelledItem| but <emu-xref href="#sec-labelled-statements-static-semantics-early-errors"></emu-xref> includes an Early Error rule that produces a Syntax Error if that occurs. That rule is modified with the addition of the <ins>highlighted</ins> text:</p>
-      <emu-grammar>LabelledItem : FunctionDeclaration</emu-grammar>
-      <ul>
-        <li>
-          It is a Syntax Error if any source text <ins>that is strict mode code</ins> is matched by this production.
-        </li>
-      </ul>
+      <p>Prior to ECMAScript 2015, the specification of |LabelledStatement| did not allow for the association of a statement label with a |FunctionDeclaration|. However, a labelled |FunctionDeclaration| was an allowable extension for non-strict code and most browser-hosted ECMAScript implementations supported that extension. In ECMAScript 2015 and later, the grammar production for |LabelledStatement| permits use of |FunctionDeclaration| as a |LabelledItem| but <emu-xref href="#sec-labelled-statements-static-semantics-early-errors"></emu-xref> includes an Early Error rule that produces a Syntax Error if that occurs. That rule is then modified to suppress the Syntax Error in non-strict code if the host supports this feature.</p>
       <emu-note>
         <p>The early error rules for |WithStatement|, |IfStatement|, and |IterationStatement| prevent these statements from containing a labelled |FunctionDeclaration| in non-strict code.</p>
       </emu-note>
@@ -52589,7 +52582,7 @@ THH:mm:ss.sss
                   1. Perform ! _varEnv_.CreateMutableBinding(_F_, *false*).
                   1. Perform ! _varEnv_.InitializeBinding(_F_, *undefined*).
                   1. Append _F_ to _instantiatedVarNames_.
-                1. When the |FunctionDeclaration| _f_ is evaluated, perform the following steps in place of the |FunctionDeclaration| Evaluation algorithm provided in <emu-xref href="#sec-function-definitions-runtime-semantics-evaluation"></emu-xref>:
+                1. [id="step-functiondeclarationinstantiation-alt-funcdecl-eval"] When the |FunctionDeclaration| _f_ is evaluated, perform the following steps in place of the |FunctionDeclaration| Evaluation algorithm provided in <emu-xref href="#sec-function-definitions-runtime-semantics-evaluation"></emu-xref>:
                   1. Let _fEnv_ be the running execution context's VariableEnvironment.
                   1. Let _bEnv_ be the running execution context's LexicalEnvironment.
                   1. Let _fObj_ be ! _bEnv_.GetBindingValue(_F_, *false*).
@@ -52616,7 +52609,7 @@ THH:mm:ss.sss
                       1. If _declaredFunctionOrVarNames_ does not contain _F_, then
                         1. Perform ? CreateGlobalVarBinding(_env_, _F_, *false*).
                         1. Append _F_ to _declaredFunctionOrVarNames_.
-                      1. When the |FunctionDeclaration| _f_ is evaluated, perform the following steps in place of the |FunctionDeclaration| Evaluation algorithm provided in <emu-xref href="#sec-function-definitions-runtime-semantics-evaluation"></emu-xref>:
+                      1. [id="step-globaldeclarationinstantiation-alt-funcdecl-eval"] When the |FunctionDeclaration| _f_ is evaluated, perform the following steps in place of the |FunctionDeclaration| Evaluation algorithm provided in <emu-xref href="#sec-function-definitions-runtime-semantics-evaluation"></emu-xref>:
                         1. Let _gEnv_ be the running execution context's VariableEnvironment.
                         1. Let _bEnv_ be the running execution context's LexicalEnvironment.
                         1. Let _fObj_ be ! _bEnv_.GetBindingValue(_F_, *false*).
@@ -52659,7 +52652,7 @@ THH:mm:ss.sss
                         1. Perform ! _varEnv_.CreateMutableBinding(_F_, *true*).
                         1. Perform ! _varEnv_.InitializeBinding(_F_, *undefined*).
                     1. Append _F_ to _declaredFunctionOrVarNames_.
-                  1. When the |FunctionDeclaration| _f_ is evaluated, perform the following steps in place of the |FunctionDeclaration| Evaluation algorithm provided in <emu-xref href="#sec-function-definitions-runtime-semantics-evaluation"></emu-xref>:
+                  1. [id="step-evaldeclarationinstantiation-alt-funcdecl-eval"] When the |FunctionDeclaration| _f_ is evaluated, perform the following steps in place of the |FunctionDeclaration| Evaluation algorithm provided in <emu-xref href="#sec-function-definitions-runtime-semantics-evaluation"></emu-xref>:
                     1. Let _gEnv_ be the running execution context's VariableEnvironment.
                     1. Let _bEnv_ be the running execution context's LexicalEnvironment.
                     1. Let _fObj_ be ! _bEnv_.GetBindingValue(_F_, *false*).
