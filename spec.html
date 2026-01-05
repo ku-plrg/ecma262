@@ -191,7 +191,7 @@
   }
 </style>
 <pre class="metadata">
-  title: ECMAScript<sup>&reg;</sup> 2025 Language&nbsp;Specification
+  title: ECMAScript<sup>&reg;</sup> 2026 Language&nbsp;Specification
   shortname: ECMA-262
   status: draft
   location: https://tc39.es/ecma262/
@@ -231,7 +231,7 @@
 
 <emu-intro id="sec-intro">
   <h1>Introduction</h1>
-  <p>This Ecma Standard defines the ECMAScript 2025 Language. It is the sixteenth edition of the ECMAScript Language Specification. Since publication of the first edition in 1997, ECMAScript has grown to be one of the world's most widely used general-purpose programming languages. It is best known as the language embedded in web browsers but has also been widely adopted for server and embedded applications.</p>
+  <p>This Ecma Standard defines the ECMAScript 2026 Language. It is the seventeenth edition of the ECMAScript Language Specification. Since publication of the first edition in 1997, ECMAScript has grown to be one of the world's most widely used general-purpose programming languages. It is best known as the language embedded in web browsers but has also been widely adopted for server and embedded applications.</p>
   <p>ECMAScript is based on several originating technologies, the most well-known being JavaScript (Netscape) and JScript (Microsoft). The language was invented by Brendan Eich at Netscape and first appeared in that company's Navigator 2.0 browser. It has appeared in all subsequent browsers from Netscape and in all browsers from Microsoft starting with Internet Explorer 3.0.</p>
   <p>The development of the ECMAScript Language Specification started in November 1996. The first edition of this Ecma Standard was adopted by the Ecma General Assembly of June 1997.</p>
   <p>That Ecma Standard was submitted to ISO/IEC JTC 1 for adoption under the fast-track procedure, and approved as international standard ISO/IEC 16262, in April 1998. The Ecma General Assembly of June 1998 approved the second edition of ECMA-262 to keep it fully aligned with ISO/IEC 16262. Changes between the first and the second edition are editorial in nature.</p>
@@ -279,7 +279,7 @@
 
 <emu-clause id="sec-scope">
   <h1>Scope</h1>
-  <p>This Standard defines the ECMAScript 2025 general-purpose programming language.</p>
+  <p>This Standard defines the ECMAScript 2026 general-purpose programming language.</p>
 </emu-clause>
 
 <emu-clause id="sec-conformance">
@@ -4599,13 +4599,12 @@
       <emu-clause id="sec-isaccessordescriptor" type="abstract operation">
         <h1>
           IsAccessorDescriptor (
-            _Desc_: a Property Descriptor or *undefined*,
+            _Desc_: a Property Descriptor,
           ): a Boolean
         </h1>
         <dl class="header">
         </dl>
         <emu-alg>
-          1. If _Desc_ is *undefined*, return *false*.
           1. If _Desc_ has a [[Get]] field, return *true*.
           1. If _Desc_ has a [[Set]] field, return *true*.
           1. Return *false*.
@@ -4615,13 +4614,12 @@
       <emu-clause id="sec-isdatadescriptor" type="abstract operation">
         <h1>
           IsDataDescriptor (
-            _Desc_: a Property Descriptor or *undefined*,
+            _Desc_: a Property Descriptor,
           ): a Boolean
         </h1>
         <dl class="header">
         </dl>
         <emu-alg>
-          1. If _Desc_ is *undefined*, return *false*.
           1. If _Desc_ has a [[Value]] field, return *true*.
           1. If _Desc_ has a [[Writable]] field, return *true*.
           1. Return *false*.
@@ -4631,13 +4629,12 @@
       <emu-clause id="sec-isgenericdescriptor" type="abstract operation">
         <h1>
           IsGenericDescriptor (
-            _Desc_: a Property Descriptor or *undefined*,
+            _Desc_: a Property Descriptor,
           ): a Boolean
         </h1>
         <dl class="header">
         </dl>
         <emu-alg>
-          1. If _Desc_ is *undefined*, return *false*.
           1. If IsAccessorDescriptor(_Desc_) is *true*, return *false*.
           1. If IsDataDescriptor(_Desc_) is *true*, return *false*.
           1. Return *true*.
@@ -14253,6 +14250,7 @@
             1. Return ? ArraySetLength(_A_, _Desc_).
           1. Else if _P_ is an array index, then
             1. Let _lengthDesc_ be OrdinaryGetOwnProperty(_A_, *"length"*).
+            1. Assert: _lengthDesc_ is not *undefined*.
             1. Assert: IsDataDescriptor(_lengthDesc_) is *true*.
             1. Assert: _lengthDesc_.[[Configurable]] is *false*.
             1. Let _length_ be _lengthDesc_.[[Value]].
@@ -14342,6 +14340,7 @@
           1. If SameValueZero(_newLen_, _numberLen_) is *false*, throw a *RangeError* exception.
           1. Set _newLenDesc_.[[Value]] to _newLen_.
           1. Let _oldLenDesc_ be OrdinaryGetOwnProperty(_A_, *"length"*).
+          1. Assert: _oldLenDesc_ is not *undefined*.
           1. Assert: IsDataDescriptor(_oldLenDesc_) is *true*.
           1. Assert: _oldLenDesc_.[[Configurable]] is *false*.
           1. Let _oldLen_ be _oldLenDesc_.[[Value]].
@@ -47617,21 +47616,22 @@ THH:mm:ss.sss
 
         <emu-clause id="sec-iterator.prototype">
           <h1>Iterator.prototype</h1>
-          <p>The initial value of Iterator.prototype is %Iterator.prototype%.</p>
+          <p>The initial value of Iterator.prototype is the Iterator prototype object.</p>
           <p>This property has the attributes { [[Writable]]: *false*, [[Enumerable]]: *false*, [[Configurable]]: *false* }.</p>
         </emu-clause>
       </emu-clause>
     </emu-clause>
 
     <emu-clause oldids="sec-%iteratorprototype%-object" id="sec-%iterator.prototype%-object">
-      <h1>The %Iterator.prototype% Object</h1>
-      <p>The <dfn>%Iterator.prototype%</dfn> object:</p>
+      <h1>Properties of the Iterator Prototype Object</h1>
+      <p>The <dfn>Iterator prototype object</dfn>:</p>
       <ul>
+        <li>is <dfn>%Iterator.prototype%</dfn>.</li>
         <li>has a [[Prototype]] internal slot whose value is %Object.prototype%.</li>
         <li>is an ordinary object.</li>
       </ul>
       <emu-note>
-        <p>All objects defined in this specification that implement the iterator interface also inherit from %Iterator.prototype%. ECMAScript code may also define objects that inherit from %Iterator.prototype%. The %Iterator.prototype% object provides a place where additional methods that are applicable to all iterator objects may be added.</p>
+        <p>All objects defined in this specification that implement the iterator interface also inherit from %Iterator.prototype%. ECMAScript code may also define objects that inherit from %Iterator.prototype%. %Iterator.prototype% provides a place where additional methods that are applicable to all iterator objects may be added.</p>
         <p>The following expression is one way that ECMAScript code can access the %Iterator.prototype% object:</p>
         <pre><code class="javascript">Object.getPrototypeOf(Object.getPrototypeOf([][Symbol.iterator]()))</code></pre>
       </emu-note>
