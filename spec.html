@@ -2841,7 +2841,7 @@
           An <dfn variants="accessor properties">accessor property</dfn> associates a key value with one or two accessor functions, and a set of Boolean attributes. The accessor functions are used to store or retrieve an ECMAScript language value that is associated with the property.
         </li>
       </ul>
-      <p>The properties of an object are uniquely identified using property keys. A <dfn id="property-key" variants="property keys" oldids="sec-ispropertykey">property key</dfn> is either a String or a Symbol. All Strings and Symbols, including the empty String, are valid as property keys. A <dfn id="property-name">property name</dfn> is a property key that is a String.</p>
+      <p>The properties of an object are uniquely identified using property keys. A <dfn id="property-key" variants="property keys" oldids="sec-ispropertykey">property key</dfn> is either a String or a Symbol. All Strings and Symbols, including the empty String, are valid as property keys. A <dfn id="property-name" variants="property names">property name</dfn> is a property key that is a String.</p>
       <p>An <dfn id="integer-index" variants="integer indices,integer-indexed">integer index</dfn> is a property name _n_ such that CanonicalNumericIndexString(_n_) returns an integral Number in the inclusive interval from *+0*<sub>𝔽</sub> to 𝔽(2<sup>53</sup> - 1). An <dfn id="array-index" variants="array indices">array index</dfn> is an integer index _n_ such that CanonicalNumericIndexString(_n_) returns an integral Number in the inclusive interval from *+0*<sub>𝔽</sub> to 𝔽(2<sup>32</sup> - 2).</p>
       <emu-note>
         <p>Every non-negative safe integer has a corresponding integer index. Every 32-bit unsigned integer except <emu-eqn>2<sup>32</sup> - 1</emu-eqn> has a corresponding array index. *"-0"* is neither an integer index nor an array index.</p>
@@ -4193,7 +4193,7 @@
     <emu-clause id="sec-set-and-relation-specification-type">
       <h1>The Set and Relation Specification Types</h1>
       <p>The <em>Set</em> type is used to explain a collection of unordered elements for use in the memory model. It is distinct from the ECMAScript collection type of the same name. To disambiguate, instances of the ECMAScript collection are consistently referred to as "Set objects" within this specification. Values of the Set type are simple collections of elements, where no element appears more than once. Elements may be added to and removed from Sets. Sets may be unioned, intersected, or subtracted from each other.</p>
-      <p>The <dfn variants="Relations">Relation</dfn> type is used to explain constraints on Sets. Values of the Relation type are Sets of ordered pairs of values from its value domain. For example, a Relation on events is a set of ordered pairs of events. For a Relation _R_ and two values _a_ and _b_ in the value domain of _R_, _a_ _R_ _b_ is shorthand for saying the ordered pair (_a_, _b_) is a member of _R_. A Relation is the <dfn id="least-relation">least Relation</dfn> with respect to some conditions when it is the smallest Relation that satisfies those conditions.</p>
+      <p>The <dfn variants="Relations">Relation</dfn> type is used to explain constraints on Sets. Values of the Relation type are Sets of ordered pairs of values from its value domain. For example, a Relation on Memory events is a set of ordered pairs of Memory events. For a Relation _R_ and two values _a_ and _b_ in the value domain of _R_, _a_ _R_ _b_ is shorthand for saying the ordered pair (_a_, _b_) is a member of _R_. A Relation is the <dfn id="least-relation">least Relation</dfn> with respect to some conditions when it is the smallest Relation that satisfies those conditions.</p>
       <p>A <dfn variants="strict partial orders">strict partial order</dfn> is a Relation value _R_ that satisfies the following.</p>
       <ul>
         <li>
@@ -6812,7 +6812,7 @@
       <h1>
         InitializeInstanceElements (
           _O_: an Object,
-          _constructor_: an ECMAScript function object,
+          _constructor_: an ECMAScript function object or a built-in function object,
         ): either a normal completion containing ~unused~ or a throw completion
       </h1>
       <dl class="header">
@@ -14779,7 +14779,7 @@
 
       <emu-clause id="sec-typedarray-with-buffer-witness-records" oldids="sec-integer-indexed-object-with-buffer-witness-records">
         <h1>TypedArray With Buffer Witness Records</h1>
-        <p>An <dfn variants="TypedArray With Buffer Witness Records">TypedArray With Buffer Witness Record</dfn> is a Record value used to encapsulate a TypedArray along with a cached byte length of the viewed buffer. It is used to help ensure there is a single shared memory read event of the byte length data block when the viewed buffer is a growable SharedArrayBuffer.</p>
+        <p>An <dfn variants="TypedArray With Buffer Witness Records">TypedArray With Buffer Witness Record</dfn> is a Record value used to encapsulate a TypedArray along with a cached byte length of the viewed buffer. It is used to help ensure there is a single ReadSharedMemory event of the byte length data block when the viewed buffer is a growable SharedArrayBuffer.</p>
         <p>TypedArray With Buffer Witness Records have the fields listed in <emu-xref href="#table-typedarray-with-buffer-witness-record-fields"></emu-xref>.</p>
         <emu-table id="table-typedarray-with-buffer-witness-record-fields" oldids="table-integer-indexed-object-with-buffer-witness-record-fields" caption="TypedArray With Buffer Witness Record Fields">
           <table>
@@ -14876,12 +14876,12 @@
         <dl class="header">
         </dl>
         <emu-alg>
-          1. If IsTypedArrayOutOfBounds(_taRecord_) is *true*, return 0.
-          1. Let _length_ be TypedArrayLength(_taRecord_).
-          1. If _length_ = 0, return 0.
+          1. Assert: IsTypedArrayOutOfBounds(_taRecord_) is *false*.
           1. Let _O_ be _taRecord_.[[Object]].
           1. If _O_.[[ByteLength]] is not ~auto~, return _O_.[[ByteLength]].
+          1. Let _length_ be TypedArrayLength(_taRecord_).
           1. Let _elementSize_ be TypedArrayElementSize(_O_).
+          1. NOTE: The returned byte length is always an integer multiple of _elementSize_, even when the underlying buffer has been resized to a non-integer multiple.
           1. Return _length_ × _elementSize_.
         </emu-alg>
       </emu-clause>
@@ -14920,16 +14920,19 @@
         <emu-alg>
           1. Let _O_ be _taRecord_.[[Object]].
           1. Let _bufferByteLength_ be _taRecord_.[[CachedBufferByteLength]].
-          1. Assert: IsDetachedBuffer(_O_.[[ViewedArrayBuffer]]) is *true* if and only if _bufferByteLength_ is ~detached~.
-          1. If _bufferByteLength_ is ~detached~, return *true*.
+          1. If IsDetachedBuffer(_O_.[[ViewedArrayBuffer]]) is *true*, then
+            1. Assert: _bufferByteLength_ is ~detached~.
+            1. Return *true*.
+          1. Assert: _bufferByteLength_ is a non-negative integer.
           1. Let _byteOffsetStart_ be _O_.[[ByteOffset]].
           1. If _O_.[[ArrayLength]] is ~auto~, then
             1. Let _byteOffsetEnd_ be _bufferByteLength_.
           1. Else,
             1. Let _elementSize_ be TypedArrayElementSize(_O_).
-            1. Let _byteOffsetEnd_ be _byteOffsetStart_ + _O_.[[ArrayLength]] × _elementSize_.
+            1. Let _arrayByteLength_ be _O_.[[ArrayLength]] × _elementSize_.
+            1. Let _byteOffsetEnd_ be _byteOffsetStart_ + _arrayByteLength_.
+          1. NOTE: A 0-length TypedArray whose [[ByteOffset]] is _bufferByteLength_ is not considered out-of-bounds.
           1. If _byteOffsetStart_ > _bufferByteLength_ or _byteOffsetEnd_ > _bufferByteLength_, return *true*.
-          1. NOTE: 0-length TypedArrays are not considered out-of-bounds.
           1. Return *false*.
         </emu-alg>
       </emu-clause>
@@ -22402,20 +22405,20 @@
                 1. Let _status_ be Completion(InitializeReferencedBinding(_lhsRef_, _nextValue_)).
             1. If _status_ is an abrupt completion, then
               1. Set the running execution context's LexicalEnvironment to _oldEnv_.
-              1. If _iteratorKind_ is ~async~, return ? AsyncIteratorClose(_iteratorRecord_, _status_).
               1. If _iterationKind_ is ~enumerate~, then
                 1. Return ? _status_.
               1. Else,
                 1. Assert: _iterationKind_ is ~iterate~.
+                1. If _iteratorKind_ is ~async~, return ? AsyncIteratorClose(_iteratorRecord_, _status_).
                 1. Return ? IteratorClose(_iteratorRecord_, _status_).
             1. Let _result_ be Completion(Evaluation of _stmt_).
             1. Set the running execution context's LexicalEnvironment to _oldEnv_.
             1. If LoopContinues(_result_, _labelSet_) is *false*, then
+              1. Set _status_ to Completion(UpdateEmpty(_result_, _V_)).
               1. If _iterationKind_ is ~enumerate~, then
-                1. Return ? UpdateEmpty(_result_, _V_).
+                1. Return ? _status_.
               1. Else,
                 1. Assert: _iterationKind_ is ~iterate~.
-                1. Set _status_ to Completion(UpdateEmpty(_result_, _V_)).
                 1. If _iteratorKind_ is ~async~, return ? AsyncIteratorClose(_iteratorRecord_, _status_).
                 1. Return ? IteratorClose(_iteratorRecord_, _status_).
             1. If _result_.[[Value]] is not ~empty~, set _V_ to _result_.[[Value]].
@@ -24276,17 +24279,17 @@
             1. Assert: _received_ is a return completion.
             1. Let _return_ be ? GetMethod(_iterator_, *"return"*).
             1. If _return_ is *undefined*, then
-              1. Set _value_ to _received_.[[Value]].
+              1. Let _receivedValue_ be _received_.[[Value]].
               1. If _generatorKind_ is ~async~, then
-                1. Set _value_ to ? Await(_value_).
-              1. Return ReturnCompletion(_value_).
+                1. Set _receivedValue_ to ? Await(_receivedValue_).
+              1. Return ReturnCompletion(_receivedValue_).
             1. Let _innerReturnResult_ be ? Call(_return_, _iterator_, « _received_.[[Value]] »).
             1. If _generatorKind_ is ~async~, set _innerReturnResult_ to ? Await(_innerReturnResult_).
             1. If _innerReturnResult_ is not an Object, throw a *TypeError* exception.
             1. Let _done_ be ? IteratorComplete(_innerReturnResult_).
             1. If _done_ is *true*, then
-              1. Set _value_ to ? IteratorValue(_innerReturnResult_).
-              1. Return ReturnCompletion(_value_).
+              1. Let _returnedValue_ be ? IteratorValue(_innerReturnResult_).
+              1. Return ReturnCompletion(_returnedValue_).
             1. If _generatorKind_ is ~async~, set _received_ to Completion(AsyncGeneratorYield(? IteratorValue(_innerReturnResult_))).
             1. Else, set _received_ to Completion(GeneratorYield(_innerReturnResult_)).
       </emu-alg>
@@ -25097,7 +25100,7 @@
               1. Let _result_ be ? OrdinaryCreateFromConstructor(NewTarget, *"%Object.prototype%"*).
             1. Perform ? InitializeInstanceElements(_result_, _F_).
             1. Return NormalCompletion(_result_).
-          1. Let _F_ be CreateBuiltinFunction(_defaultConstructor_, 0, _className_, « [[ConstructorKind]], [[SourceText]] », the current Realm Record, _constructorParent_).
+          1. Let _F_ be CreateBuiltinFunction(_defaultConstructor_, 0, _className_, « [[ConstructorKind]], [[SourceText]], [[PrivateMethods]], [[Fields]] », the current Realm Record, _constructorParent_).
         1. Else,
           1. Let _constructorInfo_ be ! DefineMethod of _constructor_ with arguments _proto_ and _constructorParent_.
           1. Let _F_ be _constructorInfo_.[[Closure]].
@@ -27126,8 +27129,8 @@
                 1. Assert: _module_.[[Status]] is either ~evaluating-async~ or ~evaluated~.
                 1. Assert: _module_.[[EvaluationError]] is ~empty~.
                 1. If _module_.[[Status]] is ~evaluated~, then
-                  1. NOTE: This implies that evaluation of _module_ completed synchronously.
-                  1. Assert: _module_.[[AsyncEvaluationOrder]] is ~unset~.
+                  1. Assert: _module_.[[AsyncEvaluationOrder]] is either ~unset~ or ~done~.
+                  1. NOTE: _module_.[[AsyncEvaluationOrder]] is ~done~ if and only if _module_ had already been evaluated and that evaluation was asynchronous.
                   1. Perform ! Call(_capability_.[[Resolve]], *undefined*, « *undefined* »).
                 1. Assert: _stack_ is empty.
               1. Return _capability_.[[Promise]].
@@ -29976,7 +29979,7 @@
         1. Else,
           1. Set _R_ to 10.
         1. If _stripPrefix_ is *true*, then
-          1. If the length of _S_ is at least 2 and the first two code units of _S_ are either *"0x"* or *"0X"*, then
+          1. If the length of _S_ ≥ 2 and the first two code units of _S_ are either *"0x"* or *"0X"*, then
             1. Set _S_ to the substring of _S_ from index 2.
             1. Set _R_ to 16.
         1. If _S_ contains a code unit that is not a radix-_R_ digit, let _end_ be the index within _S_ of the first such code unit; otherwise let _end_ be the length of _S_.
@@ -32246,7 +32249,7 @@
         <emu-note>
           <p>For implementations that provide more accurate conversions than required by the rules above, it is recommended that the following alternative version of step <emu-xref href="#step-number-proto-toexponential-intermediate-values"></emu-xref> be used as a guideline:</p>
           <emu-alg replaces-step="step-number-proto-toexponential-intermediate-values">
-            1. Let _e_, _n_, and _f_ be integers such that _f_ ≥ 0, 10<sup>_f_</sup> ≤ _n_ &lt; 10<sup>_f_ + 1</sup>, 𝔽(_n_ × 10<sup>_e_ - _f_</sup>) is 𝔽(_x_), and _f_ is as small as possible. If there are multiple possibilities for _n_, choose the value of _n_ for which 𝔽(_n_ × 10<sup>_e_ - _f_</sup>) is closest in value to 𝔽(_x_). If there are two such possible values of _n_, choose the one that is even.
+            1. Let _e_, _n_, and _ff_ be integers such that _ff_ ≥ 0, 10<sup>_ff_</sup> ≤ _n_ &lt; 10<sup>_ff_ + 1</sup>, 𝔽(_n_ × 10<sup>_e_ - _ff_</sup>) is 𝔽(_x_), and _ff_ is as small as possible. If there are multiple possibilities for _n_, choose the value of _n_ for which 𝔽(_n_ × 10<sup>_e_ - _ff_</sup>) is closest in value to 𝔽(_x_). If there are two such possible values of _n_, choose the one that is even.
           </emu-alg>
         </emu-note>
       </emu-clause>
@@ -35585,6 +35588,7 @@ THH:mm:ss.sss
           1. If _numPos_ is *NaN*, let _pos_ be +∞; otherwise let _pos_ be ! ToIntegerOrInfinity(_numPos_).
           1. Let _len_ be the length of _S_.
           1. Let _searchLen_ be the length of _searchStr_.
+          1. If _len_ &lt; _searchLen_, return *-1*<sub>𝔽</sub>.
           1. Let _start_ be the result of clamping _pos_ between 0 and _len_ - _searchLen_.
           1. Let _result_ be StringLastIndexOf(_S_, _searchStr_, _start_).
           1. If _result_ is ~not-found~, return *-1*<sub>𝔽</sub>.
@@ -36747,7 +36751,7 @@ THH:mm:ss.sss
         <emu-grammar>UnicodePropertyValueExpression :: UnicodePropertyName `=` UnicodePropertyValue</emu-grammar>
         <ul>
           <li>
-            It is a Syntax Error if the source text matched by |UnicodePropertyName| is not a Unicode property name or property alias listed in the “Property name and aliases” column of <emu-xref href="#table-nonbinary-unicode-properties"></emu-xref>.
+            It is a Syntax Error if the source text matched by |UnicodePropertyName| is not a <emu-not-ref>Unicode property name</emu-not-ref> or property alias listed in the “<emu-not-ref>Property name and aliases</emu-not-ref>” column of <emu-xref href="#table-nonbinary-unicode-properties"></emu-xref>.
           </li>
           <li>
             It is a Syntax Error if the source text matched by |UnicodePropertyValue| is not a property value or property value alias for the Unicode property or property alias given by the source text matched by |UnicodePropertyName| listed in <a href="https://unicode.org/Public/UCD/latest/ucd/PropertyValueAliases.txt"><code>PropertyValueAliases.txt</code></a>.
@@ -36756,10 +36760,10 @@ THH:mm:ss.sss
         <emu-grammar>UnicodePropertyValueExpression :: LoneUnicodePropertyNameOrValue</emu-grammar>
         <ul>
           <li>
-            It is a Syntax Error if the source text matched by |LoneUnicodePropertyNameOrValue| is not a Unicode property value or property value alias for the General_Category (gc) property listed in <a href="https://unicode.org/Public/UCD/latest/ucd/PropertyValueAliases.txt"><code>PropertyValueAliases.txt</code></a>, nor a binary property or binary property alias listed in the “Property name and aliases” column of <emu-xref href="#table-binary-unicode-properties"></emu-xref>, nor a binary property of strings listed in the “Property name” column of <emu-xref href="#table-binary-unicode-properties-of-strings"></emu-xref>.
+            It is a Syntax Error if the source text matched by |LoneUnicodePropertyNameOrValue| is not a Unicode property value or property value alias for the General_Category (gc) property listed in <a href="https://unicode.org/Public/UCD/latest/ucd/PropertyValueAliases.txt"><code>PropertyValueAliases.txt</code></a>, nor a binary property or binary property alias listed in the “<emu-not-ref>Property name and aliases</emu-not-ref>” column of <emu-xref href="#table-binary-unicode-properties"></emu-xref>, nor a binary property of strings listed in the “<emu-not-ref>Property name</emu-not-ref>” column of <emu-xref href="#table-binary-unicode-properties-of-strings"></emu-xref>.
           </li>
           <li>
-            It is a Syntax Error if the enclosing |Pattern| does not have a <sub>[UnicodeSetsMode]</sub> parameter and the source text matched by |LoneUnicodePropertyNameOrValue| is a binary property of strings listed in the “Property name” column of <emu-xref href="#table-binary-unicode-properties-of-strings"></emu-xref>.
+            It is a Syntax Error if the enclosing |Pattern| does not have a <sub>[UnicodeSetsMode]</sub> parameter and the source text matched by |LoneUnicodePropertyNameOrValue| is a binary property of strings listed in the “<emu-not-ref>Property name</emu-not-ref>” column of <emu-xref href="#table-binary-unicode-properties-of-strings"></emu-xref>.
           </li>
         </ul>
         <emu-grammar>CharacterClassEscape :: `P{` UnicodePropertyValueExpression `}`</emu-grammar>
@@ -37129,7 +37133,7 @@ THH:mm:ss.sss
         </emu-alg>
         <emu-grammar>UnicodePropertyValueExpression :: LoneUnicodePropertyNameOrValue</emu-grammar>
         <emu-alg>
-          1. If the source text matched by |LoneUnicodePropertyNameOrValue| is a binary property of strings listed in the “Property name” column of <emu-xref href="#table-binary-unicode-properties-of-strings"></emu-xref>, return *true*.
+          1. If the source text matched by |LoneUnicodePropertyNameOrValue| is a binary property of strings listed in the “<emu-not-ref>Property name</emu-not-ref>” column of <emu-xref href="#table-binary-unicode-properties-of-strings"></emu-xref>, return *true*.
           1. Return *false*.
         </emu-alg>
         <emu-grammar>ClassUnion :: ClassSetRange ClassUnion?</emu-grammar>
@@ -38232,7 +38236,7 @@ THH:mm:ss.sss
         <emu-alg>
           1. Let _ps_ be the source text matched by |UnicodePropertyName|.
           1. Let _p_ be UnicodeMatchProperty(_rer_, _ps_).
-          1. Assert: _p_ is a Unicode property name or property alias listed in the “Property name and aliases” column of <emu-xref href="#table-nonbinary-unicode-properties"></emu-xref>.
+          1. Assert: _p_ is a <emu-not-ref>Unicode property name</emu-not-ref> or property alias listed in the “<emu-not-ref>Property name and aliases</emu-not-ref>” column of <emu-xref href="#table-nonbinary-unicode-properties"></emu-xref>.
           1. Let _vs_ be the source text matched by |UnicodePropertyValue|.
           1. Let _v_ be UnicodeMatchPropertyValue(_p_, _vs_).
           1. Let _A_ be the CharSet containing all Unicode code points whose character database definition includes the property _p_ with value _v_.
@@ -38244,7 +38248,7 @@ THH:mm:ss.sss
           1. If UnicodeMatchPropertyValue(`General_Category`, _s_) is a Unicode property value or property value alias for the General_Category (gc) property listed in <a href="https://unicode.org/Public/UCD/latest/ucd/PropertyValueAliases.txt"><code>PropertyValueAliases.txt</code></a>, then
             1. Return the CharSet containing all Unicode code points whose character database definition includes the property “General_Category” with value _s_.
           1. Let _p_ be UnicodeMatchProperty(_rer_, _s_).
-          1. Assert: _p_ is a binary Unicode property or binary property alias listed in the “<emu-not-ref>Property name</emu-not-ref> and aliases” column of <emu-xref href="#table-binary-unicode-properties"></emu-xref>, or a binary Unicode property of strings listed in the “<emu-not-ref>Property name</emu-not-ref>” column of <emu-xref href="#table-binary-unicode-properties-of-strings"></emu-xref>.
+          1. Assert: _p_ is a binary Unicode property or binary property alias listed in the “<emu-not-ref>Property name and aliases</emu-not-ref>” column of <emu-xref href="#table-binary-unicode-properties"></emu-xref>, or a binary Unicode property of strings listed in the “<emu-not-ref>Property name</emu-not-ref>” column of <emu-xref href="#table-binary-unicode-properties-of-strings"></emu-xref>.
           1. Let _A_ be the CharSet containing all CharSetElements whose character database definition includes the property _p_ with value “True”.
           1. Return MaybeSimpleCaseFolding(_rer_, _A_).
         </emu-alg>
@@ -38490,20 +38494,20 @@ THH:mm:ss.sss
             UnicodeMatchProperty (
               _rer_: a RegExp Record,
               _p_: ECMAScript source text,
-            ): a Unicode property name
+            ): a <emu-not-ref>Unicode property name</emu-not-ref>
           </h1>
           <dl class="header">
           </dl>
           <emu-alg>
-            1. If _rer_.[[UnicodeSets]] is *true* and _p_ is a Unicode <emu-not-ref>property name</emu-not-ref> listed in the “<emu-not-ref>Property name</emu-not-ref>” column of <emu-xref href="#table-binary-unicode-properties-of-strings"></emu-xref>, then
+            1. If _rer_.[[UnicodeSets]] is *true* and _p_ is a <emu-not-ref>Unicode property name</emu-not-ref> listed in the “<emu-not-ref>Property name</emu-not-ref>” column of <emu-xref href="#table-binary-unicode-properties-of-strings"></emu-xref>, then
               1. Return the List of Unicode code points _p_.
-            1. Assert: _p_ is a Unicode <emu-not-ref>property name</emu-not-ref> or property alias listed in the “<emu-not-ref>Property name</emu-not-ref> and aliases” column of <emu-xref href="#table-nonbinary-unicode-properties"></emu-xref> or <emu-xref href="#table-binary-unicode-properties"></emu-xref>.
-            1. Let _c_ be the canonical <emu-not-ref>property name</emu-not-ref> of _p_ as given in the “Canonical <emu-not-ref>property name</emu-not-ref>” column of the corresponding row.
+            1. Assert: _p_ is a <emu-not-ref>Unicode property name</emu-not-ref> or property alias listed in the “<emu-not-ref>Property name and aliases</emu-not-ref>” column of <emu-xref href="#table-nonbinary-unicode-properties"></emu-xref> or <emu-xref href="#table-binary-unicode-properties"></emu-xref>.
+            1. Let _c_ be the canonical <emu-not-ref>property name</emu-not-ref> of _p_ as given in the “<emu-not-ref>Canonical property name</emu-not-ref>” column of the corresponding row.
             1. Return the List of Unicode code points _c_.
           </emu-alg>
-          <p>Implementations must support the Unicode property names and aliases listed in <emu-xref href="#table-nonbinary-unicode-properties"></emu-xref>, <emu-xref href="#table-binary-unicode-properties"></emu-xref>, and <emu-xref href="#table-binary-unicode-properties-of-strings"></emu-xref>. To ensure interoperability, implementations must not support any other property names or aliases.</p>
+          <p>Implementations must support the <emu-not-ref>Unicode property names</emu-not-ref> and aliases listed in <emu-xref href="#table-nonbinary-unicode-properties"></emu-xref>, <emu-xref href="#table-binary-unicode-properties"></emu-xref>, and <emu-xref href="#table-binary-unicode-properties-of-strings"></emu-xref>. To ensure interoperability, implementations must not support any other <emu-not-ref>property names</emu-not-ref> or aliases.</p>
           <emu-note>
-            <p>For example, `Script_Extensions` (property name) and `scx` (property alias) are valid, but `script_extensions` or `Scx` aren't.</p>
+            <p>For example, `Script_Extensions` (<emu-not-ref>property name</emu-not-ref>) and `scx` (property alias) are valid, but `script_extensions` or `Scx` aren't.</p>
           </emu-note>
           <emu-note>
             <p>The listed properties form a superset of what <a href="https://unicode.org/reports/tr18/#RL1.2">UTS18 RL1.2</a> requires.</p>
@@ -38526,7 +38530,7 @@ THH:mm:ss.sss
           <dl class="header">
           </dl>
           <emu-alg>
-            1. Assert: _p_ is a canonical, unaliased Unicode property name listed in the “Canonical property name” column of <emu-xref href="#table-nonbinary-unicode-properties"></emu-xref>.
+            1. Assert: _p_ is a canonical, unaliased <emu-not-ref>Unicode property name</emu-not-ref> listed in the “<emu-not-ref>Canonical property name</emu-not-ref>” column of <emu-xref href="#table-nonbinary-unicode-properties"></emu-xref>.
             1. Assert: _v_ is a property value or property value alias for the Unicode property _p_ listed in <a href="https://unicode.org/Public/UCD/latest/ucd/PropertyValueAliases.txt"><code>PropertyValueAliases.txt</code></a>.
             1. Let _value_ be the canonical property value of _v_ as given in the “Canonical property value” column of the corresponding row.
             1. Return the List of Unicode code points _value_.
@@ -41680,6 +41684,7 @@ THH:mm:ss.sss
           1. Perform ? RequireInternalSlot(_O_, [[TypedArrayName]]).
           1. Assert: _O_ has a [[ViewedArrayBuffer]] internal slot.
           1. Let _taRecord_ be MakeTypedArrayWithBufferWitnessRecord(_O_, ~seq-cst~).
+          1. If IsTypedArrayOutOfBounds(_taRecord_) is *true*, return *+0*<sub>𝔽</sub>.
           1. Let _size_ be TypedArrayByteLength(_taRecord_).
           1. Return 𝔽(_size_).
         </emu-alg>
@@ -41731,9 +41736,10 @@ THH:mm:ss.sss
             1. Set _taRecord_ to MakeTypedArrayWithBufferWitnessRecord(_O_, ~seq-cst~).
             1. If IsTypedArrayOutOfBounds(_taRecord_) is *true*, throw a *TypeError* exception.
             1. Set _len_ to TypedArrayLength(_taRecord_).
+            1. NOTE: Side-effects of the above steps may have reduced the size of _O_, in which case copying should proceed with the longest still-applicable prefix.
+            1. Set _count_ to min(_count_, _len_ - _startIndex_, _len_ - _targetIndex_).
             1. Let _elementSize_ be TypedArrayElementSize(_O_).
             1. Let _byteOffset_ be _O_.[[ByteOffset]].
-            1. Let _bufferByteLimit_ be (_len_ × _elementSize_) + _byteOffset_.
             1. Let _toByteIndex_ be (_targetIndex_ × _elementSize_) + _byteOffset_.
             1. Let _fromByteIndex_ be (_startIndex_ × _elementSize_) + _byteOffset_.
             1. Let _countBytes_ be _count_ × _elementSize_.
@@ -41744,14 +41750,11 @@ THH:mm:ss.sss
             1. Else,
               1. Let _direction_ be 1.
             1. Repeat, while _countBytes_ > 0,
-              1. If _fromByteIndex_ &lt; _bufferByteLimit_ and _toByteIndex_ &lt; _bufferByteLimit_, then
-                1. Let _value_ be GetValueFromBuffer(_buffer_, _fromByteIndex_, ~uint8~, *true*, ~unordered~).
-                1. Perform SetValueInBuffer(_buffer_, _toByteIndex_, ~uint8~, _value_, *true*, ~unordered~).
-                1. Set _fromByteIndex_ to _fromByteIndex_ + _direction_.
-                1. Set _toByteIndex_ to _toByteIndex_ + _direction_.
-                1. Set _countBytes_ to _countBytes_ - 1.
-              1. Else,
-                1. Set _countBytes_ to 0.
+              1. Let _value_ be GetValueFromBuffer(_buffer_, _fromByteIndex_, ~uint8~, *true*, ~unordered~).
+              1. Perform SetValueInBuffer(_buffer_, _toByteIndex_, ~uint8~, _value_, *true*, ~unordered~).
+              1. Set _fromByteIndex_ to _fromByteIndex_ + _direction_.
+              1. Set _toByteIndex_ to _toByteIndex_ + _direction_.
+              1. Set _countBytes_ to _countBytes_ - 1.
           1. Return _O_.
         </emu-alg>
       </emu-clause>
@@ -42544,7 +42547,7 @@ THH:mm:ss.sss
         </h1>
         <dl class="header">
           <dt>description</dt>
-          <dd>It is used to specify the creation of a new TypedArray using a constructor function that is derived from _exemplar_, and a _length_. Unlike TypedArraySpeciesCreate, which can construct custom TypedArray subclasses through the use of %Symbol.species%, this operation always uses one of the built-in TypedArray constructors.</dd>
+          <dd>It is used to specify the creation of a new TypedArray using a constructor function that is derived from _exemplar_. Unlike TypedArraySpeciesCreate, which can construct custom TypedArray subclasses through the use of %Symbol.species%, this operation always uses one of the built-in TypedArray constructors.</dd>
         </dl>
         <emu-alg>
           1. Let _constructor_ be the intrinsic object associated with the constructor name _exemplar_.[[TypedArrayName]] in <emu-xref href="#table-the-typedarray-constructors"></emu-xref>.
@@ -43678,7 +43681,7 @@ THH:mm:ss.sss
 
   <emu-clause id="sec-set-objects">
     <h1>Set Objects</h1>
-    <p>Set objects are collections of ECMAScript language values. A distinct value may only occur once as an element of a Set's collection. Distinct values are discriminated using the semantics of the SameValueZero comparison algorithm.</p>
+    <p><dfn variants="Set object">Set objects</dfn> are collections of ECMAScript language values. A Set may contain each distinct value at most once. Distinct values are discriminated using the semantics of the SameValueZero comparison algorithm.</p>
     <p>Set objects must be implemented using either hash tables or other mechanisms that, on average, provide access times that are sublinear on the number of elements in the collection. The data structure used in this specification is only intended to describe the required observable semantics of Set objects. It is not intended to be a viable implementation model.</p>
 
     <emu-clause id="sec-abstract-operations-for-set-objects">
@@ -44673,7 +44676,7 @@ THH:mm:ss.sss
         <dl class="header">
         </dl>
         <emu-alg>
-          1. If IsSharedArrayBuffer(_arrayBuffer_) is *true* and _arrayBuffer_ has an [[ArrayBufferByteLengthData]] internal slot, then
+          1. If IsGrowableSharedArrayBuffer(_arrayBuffer_) is *true*, then
             1. Let _bufferByteLengthBlock_ be _arrayBuffer_.[[ArrayBufferByteLengthData]].
             1. Let _rawLength_ be GetRawBytesFromSharedBlock(_bufferByteLengthBlock_, 0, ~biguint64~, *true*, _order_).
             1. Let _isLittleEndian_ be the value of the [[LittleEndian]] field of the surrounding agent's Agent Record.
@@ -45374,14 +45377,27 @@ THH:mm:ss.sss
         </h1>
         <dl class="header">
           <dt>description</dt>
-          <dd>It tests whether an object is an ArrayBuffer, a SharedArrayBuffer, or a subtype of either.</dd>
+          <dd>It tests whether an object is a SharedArrayBuffer.</dd>
         </dl>
         <emu-alg>
-          1. Let _bufferData_ be _obj_.[[ArrayBufferData]].
-          1. If _bufferData_ is *null*, return *false*.
-          1. If _bufferData_ is a Data Block, return *false*.
-          1. Assert: _bufferData_ is a Shared Data Block.
-          1. Return *true*.
+          1. If _obj_.[[ArrayBufferData]] is a Shared Data Block, return *true*.
+          1. Return *false*.
+        </emu-alg>
+      </emu-clause>
+
+      <emu-clause id="sec-isgrowablesharedarraybuffer" type="abstract operation">
+        <h1>
+          IsGrowableSharedArrayBuffer (
+            _obj_: an ArrayBuffer or a SharedArrayBuffer,
+          ): a Boolean
+        </h1>
+        <dl class="header">
+          <dt>description</dt>
+          <dd>It tests whether an object is a growable SharedArrayBuffer.</dd>
+        </dl>
+        <emu-alg>
+          1. If IsSharedArrayBuffer(_obj_) is *true* and _obj_ has an [[ArrayBufferByteLengthData]] internal slot, return *true*.
+          1. Return *false*.
         </emu-alg>
       </emu-clause>
 
@@ -45399,12 +45415,12 @@ THH:mm:ss.sss
         <p>The implementation of HostGrowSharedArrayBuffer must conform to the following requirements:</p>
         <ul>
           <li>If the abstract operation does not complete normally with ~unhandled~, and _newByteLength_ &lt; the current byte length of the _buffer_ or _newByteLength_ > _buffer_.[[ArrayBufferMaxByteLength]], throw a *RangeError* exception.</li>
-          <li>Let _isLittleEndian_ be the value of the [[LittleEndian]] field of the surrounding agent's Agent Record. If the abstract operation completes normally with ~handled~, a WriteSharedMemory or ReadModifyWriteSharedMemory event whose [[Order]] is ~seq-cst~, [[Payload]] is NumericToRawBytes(~biguint64~, _newByteLength_, _isLittleEndian_), [[Block]] is _buffer_.[[ArrayBufferByteLengthData]], [[ByteIndex]] is 0, and [[ElementSize]] is 8 is added to the surrounding agent's candidate execution such that racing calls to `SharedArrayBuffer.prototype.grow` are not "lost", i.e. silently do nothing.</li>
+          <li>Let _isLittleEndian_ be the value of the [[LittleEndian]] field of the surrounding agent's Agent Record. If the abstract operation completes normally with ~handled~, a WriteSharedMemory or ReadModifyWriteSharedMemory event whose [[Order]] is ~seq-cst~, [[Payload]] is NumericToRawBytes(~biguint64~, _newByteLength_, _isLittleEndian_), [[Block]] is _buffer_.[[ArrayBufferByteLengthData]], [[ByteIndex]] is 0, and [[ElementSize]] is 8 is added to the surrounding agent's candidate execution such that racing calls to <emu-xref href="#sec-sharedarraybuffer.prototype.grow" title></emu-xref> are not "lost", i.e. silently do nothing.</li>
         </ul>
 
         <emu-note>
-          <p>The second requirement above is intentionally vague about how or when the current byte length of _buffer_ is read. Because the byte length must be updated via an atomic read-modify-write operation on the underlying hardware, architectures that use load-link/store-conditional or load-exclusive/store-exclusive instruction pairs may wish to keep the paired instructions close in the instruction stream. As such, SharedArrayBuffer.prototype.grow itself does not perform bounds checking on _newByteLength_ before calling HostGrowSharedArrayBuffer, nor is there a requirement on when the current byte length is read.</p>
-          <p>This is in contrast with HostResizeArrayBuffer, which is guaranteed that the value of _newByteLength_ is ≥ 0 and ≤ _buffer_.[[ArrayBufferMaxByteLength]].</p>
+          <p>The second requirement above is intentionally vague about how or when the current byte length of _buffer_ is read. Because the byte length must be updated via an atomic read-modify-write operation on the underlying hardware, architectures that use load-link/store-conditional or load-exclusive/store-exclusive instruction pairs may wish to keep the paired instructions close in the instruction stream. As such, <emu-xref href="#sec-sharedarraybuffer.prototype.grow" title></emu-xref> itself does not perform bounds checking on _newByteLength_ before calling HostGrowSharedArrayBuffer, nor is there a requirement on when the current byte length is read.</p>
+          <p>This is in contrast with HostResizeArrayBuffer, which is guaranteed that 0 ≤ _newByteLength_ ≤ _buffer_.[[ArrayBufferMaxByteLength]].</p>
         </emu-note>
 
         <p>The default implementation of HostGrowSharedArrayBuffer is to return NormalCompletion(~unhandled~).</p>
@@ -45624,7 +45640,7 @@ THH:mm:ss.sss
 
       <emu-clause id="sec-dataview-with-buffer-witness-records">
         <h1>DataView With Buffer Witness Records</h1>
-        <p>A <dfn variants="DataView With Buffer Witness Records">DataView With Buffer Witness Record</dfn> is a Record value used to encapsulate a DataView along with a cached byte length of the viewed buffer. It is used to help ensure there is a single shared memory read event of the byte length data block when the viewed buffer is a growable SharedArrayBuffers.</p>
+        <p>A <dfn variants="DataView With Buffer Witness Records">DataView With Buffer Witness Record</dfn> is a Record value used to encapsulate a DataView along with a cached byte length of the viewed buffer. It is used to help ensure there is a single ReadSharedMemory event of the byte length data block when the viewed buffer is a growable SharedArrayBuffer.</p>
         <p>DataView With Buffer Witness Records have the fields listed in <emu-xref href="#table-dataview-with-buffer-witness-record-fields"></emu-xref>.</p>
         <emu-table id="table-dataview-with-buffer-witness-record-fields" caption="DataView With Buffer Witness Record Fields">
           <table>
@@ -45717,15 +45733,17 @@ THH:mm:ss.sss
         <emu-alg>
           1. Let _view_ be _viewRecord_.[[Object]].
           1. Let _bufferByteLength_ be _viewRecord_.[[CachedBufferByteLength]].
-          1. Assert: IsDetachedBuffer(_view_.[[ViewedArrayBuffer]]) is *true* if and only if _bufferByteLength_ is ~detached~.
-          1. If _bufferByteLength_ is ~detached~, return *true*.
+          1. If IsDetachedBuffer(_view_.[[ViewedArrayBuffer]]) is *true*, then
+            1. Assert: _bufferByteLength_ is ~detached~.
+            1. Return *true*.
+          1. Assert: _bufferByteLength_ is a non-negative integer.
           1. Let _byteOffsetStart_ be _view_.[[ByteOffset]].
           1. If _view_.[[ByteLength]] is ~auto~, then
             1. Let _byteOffsetEnd_ be _bufferByteLength_.
           1. Else,
             1. Let _byteOffsetEnd_ be _byteOffsetStart_ + _view_.[[ByteLength]].
+          1. NOTE: A 0-length DataView whose [[ByteOffset]] is _bufferByteLength_ is not considered out-of-bounds.
           1. If _byteOffsetStart_ > _bufferByteLength_ or _byteOffsetEnd_ > _bufferByteLength_, return *true*.
-          1. NOTE: 0-length DataViews are not considered out-of-bounds.
           1. Return *false*.
         </emu-alg>
       </emu-clause>
@@ -48092,374 +48110,374 @@ THH:mm:ss.sss
           <p>This property has the attributes { [[Writable]]: *false*, [[Enumerable]]: *false*, [[Configurable]]: *false* }.</p>
         </emu-clause>
       </emu-clause>
-    </emu-clause>
 
-    <emu-clause oldids="sec-%iteratorprototype%-object" id="sec-%iterator.prototype%-object">
-      <h1>Properties of the Iterator Prototype Object</h1>
-      <p>The <dfn>Iterator prototype object</dfn>:</p>
-      <ul>
-        <li>is <dfn>%Iterator.prototype%</dfn>.</li>
-        <li>has a [[Prototype]] internal slot whose value is %Object.prototype%.</li>
-        <li>is an ordinary object.</li>
-      </ul>
-      <emu-note>
-        <p>All objects defined in this specification that implement the iterator interface also inherit from %Iterator.prototype%. ECMAScript code may also define objects that inherit from %Iterator.prototype%. %Iterator.prototype% provides a place where additional methods that are applicable to all iterator objects may be added.</p>
-        <p>The following expression is one way that ECMAScript code can access the %Iterator.prototype% object:</p>
-        <pre><code class="javascript">Object.getPrototypeOf(Object.getPrototypeOf([][Symbol.iterator]()))</code></pre>
-      </emu-note>
-
-      <emu-clause id="sec-iterator.prototype.constructor">
-        <h1>Iterator.prototype.constructor</h1>
-        <p>`Iterator.prototype.constructor` is an accessor property with attributes { [[Enumerable]]: *false*, [[Configurable]]: *true* }. The [[Get]] and [[Set]] attributes are defined as follows:</p>
-
-        <emu-clause id="sec-get-iterator.prototype.constructor">
-          <h1>get Iterator.prototype.constructor</h1>
-          <p>The value of the [[Get]] attribute is a built-in function that requires no arguments. It performs the following steps when called:</p>
-          <emu-alg>
-            1. Return %Iterator%.
-          </emu-alg>
-        </emu-clause>
-
-        <emu-clause id="sec-set-iterator.prototype.constructor">
-          <h1>set Iterator.prototype.constructor</h1>
-          <p>The value of the [[Set]] attribute is a built-in function that takes an argument _v_. It performs the following steps when called:</p>
-          <emu-alg>
-            1. Perform ? SetterThatIgnoresPrototypeProperties(*this* value, %Iterator.prototype%, *"constructor"*, _v_).
-            1. Return *undefined*.
-          </emu-alg>
-        </emu-clause>
-
+      <emu-clause oldids="sec-%iteratorprototype%-object" id="sec-%iterator.prototype%-object">
+        <h1>Properties of the Iterator Prototype Object</h1>
+        <p>The <dfn>Iterator prototype object</dfn>:</p>
+        <ul>
+          <li>is <dfn>%Iterator.prototype%</dfn>.</li>
+          <li>has a [[Prototype]] internal slot whose value is %Object.prototype%.</li>
+          <li>is an ordinary object.</li>
+        </ul>
         <emu-note>
-          <p>Unlike the *"constructor"* property on most built-in prototypes, for web-compatibility reasons this property must be an accessor.</p>
+          <p>All objects defined in this specification that implement the iterator interface also inherit from %Iterator.prototype%. ECMAScript code may also define objects that inherit from %Iterator.prototype%. %Iterator.prototype% provides a place where additional methods that are applicable to all iterator objects may be added.</p>
+          <p>The following expression is one way that ECMAScript code can access the %Iterator.prototype% object:</p>
+          <pre><code class="javascript">Object.getPrototypeOf(Object.getPrototypeOf([][Symbol.iterator]()))</code></pre>
         </emu-note>
-      </emu-clause>
 
-      <emu-clause id="sec-iterator.prototype.drop">
-        <h1>Iterator.prototype.drop ( _limit_ )</h1>
-        <p>This method performs the following steps when called:</p>
-        <emu-alg>
-          1. Let _O_ be the *this* value.
-          1. If _O_ is not an Object, throw a *TypeError* exception.
-          1. Let _iterated_ be the Iterator Record { [[Iterator]]: _O_, [[NextMethod]]: *undefined*, [[Done]]: *false* }.
-          1. Let _numLimit_ be Completion(ToNumber(_limit_)).
-          1. IfAbruptCloseIterator(_numLimit_, _iterated_).
-          1. If _numLimit_ is *NaN*, then
-            1. Let _error_ be ThrowCompletion(a newly created *RangeError* object).
-            1. Return ? IteratorClose(_iterated_, _error_).
-          1. Let _integerLimit_ be ! ToIntegerOrInfinity(_numLimit_).
-          1. If _integerLimit_ &lt; 0, then
-            1. Let _error_ be ThrowCompletion(a newly created *RangeError* object).
-            1. Return ? IteratorClose(_iterated_, _error_).
-          1. Set _iterated_ to ? GetIteratorDirect(_O_).
-          1. Let _closure_ be a new Abstract Closure with no parameters that captures _iterated_ and _integerLimit_ and performs the following steps when called:
-            1. Let _remaining_ be _integerLimit_.
-            1. Repeat, while _remaining_ > 0,
-              1. If _remaining_ ≠ +∞, then
-                1. Set _remaining_ to _remaining_ - 1.
-              1. Let _next_ be ? IteratorStep(_iterated_).
-              1. If _next_ is ~done~, return ReturnCompletion(*undefined*).
-            1. Repeat,
-              1. Let _value_ be ? IteratorStepValue(_iterated_).
-              1. If _value_ is ~done~, return ReturnCompletion(*undefined*).
-              1. Let _completion_ be Completion(Yield(_value_)).
-              1. IfAbruptCloseIterator(_completion_, _iterated_).
-          1. Let _result_ be CreateIteratorFromClosure(_closure_, *"Iterator Helper"*, %IteratorHelperPrototype%, « [[UnderlyingIterator]] »).
-          1. Set _result_.[[UnderlyingIterator]] to _iterated_.
-          1. Return _result_.
-        </emu-alg>
-      </emu-clause>
+        <emu-clause id="sec-iterator.prototype.constructor">
+          <h1>Iterator.prototype.constructor</h1>
+          <p>`Iterator.prototype.constructor` is an accessor property with attributes { [[Enumerable]]: *false*, [[Configurable]]: *true* }. The [[Get]] and [[Set]] attributes are defined as follows:</p>
 
-      <emu-clause id="sec-iterator.prototype.every">
-        <h1>Iterator.prototype.every ( _predicate_ )</h1>
-        <p>This method performs the following steps when called:</p>
-        <emu-alg>
-          1. Let _O_ be the *this* value.
-          1. If _O_ is not an Object, throw a *TypeError* exception.
-          1. Let _iterated_ be the Iterator Record { [[Iterator]]: _O_, [[NextMethod]]: *undefined*, [[Done]]: *false* }.
-          1. If IsCallable(_predicate_) is *false*, then
-            1. Let _error_ be ThrowCompletion(a newly created *TypeError* object).
-            1. Return ? IteratorClose(_iterated_, _error_).
-          1. Set _iterated_ to ? GetIteratorDirect(_O_).
-          1. Let _counter_ be 0.
-          1. Repeat,
-            1. Let _value_ be ? IteratorStepValue(_iterated_).
-            1. If _value_ is ~done~, return *true*.
-            1. Let _result_ be Completion(Call(_predicate_, *undefined*, « _value_, 𝔽(_counter_) »)).
-            1. IfAbruptCloseIterator(_result_, _iterated_).
-            1. If ToBoolean(_result_) is *false*, return ? IteratorClose(_iterated_, NormalCompletion(*false*)).
-            1. Set _counter_ to _counter_ + 1.
-        </emu-alg>
-      </emu-clause>
+          <emu-clause id="sec-get-iterator.prototype.constructor">
+            <h1>get Iterator.prototype.constructor</h1>
+            <p>The value of the [[Get]] attribute is a built-in function that requires no arguments. It performs the following steps when called:</p>
+            <emu-alg>
+              1. Return %Iterator%.
+            </emu-alg>
+          </emu-clause>
 
-      <emu-clause id="sec-iterator.prototype.filter">
-        <h1>Iterator.prototype.filter ( _predicate_ )</h1>
-        <p>This method performs the following steps when called:</p>
-        <emu-alg>
-          1. Let _O_ be the *this* value.
-          1. If _O_ is not an Object, throw a *TypeError* exception.
-          1. Let _iterated_ be the Iterator Record { [[Iterator]]: _O_, [[NextMethod]]: *undefined*, [[Done]]: *false* }.
-          1. If IsCallable(_predicate_) is *false*, then
-            1. Let _error_ be ThrowCompletion(a newly created *TypeError* object).
-            1. Return ? IteratorClose(_iterated_, _error_).
-          1. Set _iterated_ to ? GetIteratorDirect(_O_).
-          1. Let _closure_ be a new Abstract Closure with no parameters that captures _iterated_ and _predicate_ and performs the following steps when called:
-            1. Let _counter_ be 0.
-            1. Repeat,
-              1. Let _value_ be ? IteratorStepValue(_iterated_).
-              1. If _value_ is ~done~, return ReturnCompletion(*undefined*).
-              1. Let _selected_ be Completion(Call(_predicate_, *undefined*, « _value_, 𝔽(_counter_) »)).
-              1. IfAbruptCloseIterator(_selected_, _iterated_).
-              1. If ToBoolean(_selected_) is *true*, then
+          <emu-clause id="sec-set-iterator.prototype.constructor">
+            <h1>set Iterator.prototype.constructor</h1>
+            <p>The value of the [[Set]] attribute is a built-in function that takes an argument _v_. It performs the following steps when called:</p>
+            <emu-alg>
+              1. Perform ? SetterThatIgnoresPrototypeProperties(*this* value, %Iterator.prototype%, *"constructor"*, _v_).
+              1. Return *undefined*.
+            </emu-alg>
+          </emu-clause>
+
+          <emu-note>
+            <p>Unlike the *"constructor"* property on most built-in prototypes, for web-compatibility reasons this property must be an accessor.</p>
+          </emu-note>
+        </emu-clause>
+
+        <emu-clause id="sec-iterator.prototype.drop">
+          <h1>Iterator.prototype.drop ( _limit_ )</h1>
+          <p>This method performs the following steps when called:</p>
+          <emu-alg>
+            1. Let _O_ be the *this* value.
+            1. If _O_ is not an Object, throw a *TypeError* exception.
+            1. Let _iterated_ be the Iterator Record { [[Iterator]]: _O_, [[NextMethod]]: *undefined*, [[Done]]: *false* }.
+            1. Let _numLimit_ be Completion(ToNumber(_limit_)).
+            1. IfAbruptCloseIterator(_numLimit_, _iterated_).
+            1. If _numLimit_ is *NaN*, then
+              1. Let _error_ be ThrowCompletion(a newly created *RangeError* object).
+              1. Return ? IteratorClose(_iterated_, _error_).
+            1. Let _integerLimit_ be ! ToIntegerOrInfinity(_numLimit_).
+            1. If _integerLimit_ &lt; 0, then
+              1. Let _error_ be ThrowCompletion(a newly created *RangeError* object).
+              1. Return ? IteratorClose(_iterated_, _error_).
+            1. Set _iterated_ to ? GetIteratorDirect(_O_).
+            1. Let _closure_ be a new Abstract Closure with no parameters that captures _iterated_ and _integerLimit_ and performs the following steps when called:
+              1. Let _remaining_ be _integerLimit_.
+              1. Repeat, while _remaining_ > 0,
+                1. If _remaining_ ≠ +∞, then
+                  1. Set _remaining_ to _remaining_ - 1.
+                1. Let _next_ be ? IteratorStep(_iterated_).
+                1. If _next_ is ~done~, return ReturnCompletion(*undefined*).
+              1. Repeat,
+                1. Let _value_ be ? IteratorStepValue(_iterated_).
+                1. If _value_ is ~done~, return ReturnCompletion(*undefined*).
                 1. Let _completion_ be Completion(Yield(_value_)).
                 1. IfAbruptCloseIterator(_completion_, _iterated_).
-              1. Set _counter_ to _counter_ + 1.
-          1. Let _result_ be CreateIteratorFromClosure(_closure_, *"Iterator Helper"*, %IteratorHelperPrototype%, « [[UnderlyingIterator]] »).
-          1. Set _result_.[[UnderlyingIterator]] to _iterated_.
-          1. Return _result_.
-        </emu-alg>
-      </emu-clause>
-
-      <emu-clause id="sec-iterator.prototype.find">
-        <h1>Iterator.prototype.find ( _predicate_ )</h1>
-        <p>This method performs the following steps when called:</p>
-        <emu-alg>
-          1. Let _O_ be the *this* value.
-          1. If _O_ is not an Object, throw a *TypeError* exception.
-          1. Let _iterated_ be the Iterator Record { [[Iterator]]: _O_, [[NextMethod]]: *undefined*, [[Done]]: *false* }.
-          1. If IsCallable(_predicate_) is *false*, then
-            1. Let _error_ be ThrowCompletion(a newly created *TypeError* object).
-            1. Return ? IteratorClose(_iterated_, _error_).
-          1. Set _iterated_ to ? GetIteratorDirect(_O_).
-          1. Let _counter_ be 0.
-          1. Repeat,
-            1. Let _value_ be ? IteratorStepValue(_iterated_).
-            1. If _value_ is ~done~, return *undefined*.
-            1. Let _result_ be Completion(Call(_predicate_, *undefined*, « _value_, 𝔽(_counter_) »)).
-            1. IfAbruptCloseIterator(_result_, _iterated_).
-            1. If ToBoolean(_result_) is *true*, return ? IteratorClose(_iterated_, NormalCompletion(_value_)).
-            1. Set _counter_ to _counter_ + 1.
-        </emu-alg>
-      </emu-clause>
-
-      <emu-clause id="sec-iterator.prototype.flatmap">
-        <h1>Iterator.prototype.flatMap ( _mapper_ )</h1>
-        <p>This method performs the following steps when called:</p>
-        <emu-alg>
-          1. Let _O_ be the *this* value.
-          1. If _O_ is not an Object, throw a *TypeError* exception.
-          1. Let _iterated_ be the Iterator Record { [[Iterator]]: _O_, [[NextMethod]]: *undefined*, [[Done]]: *false* }.
-          1. If IsCallable(_mapper_) is *false*, then
-            1. Let _error_ be ThrowCompletion(a newly created *TypeError* object).
-            1. Return ? IteratorClose(_iterated_, _error_).
-          1. Set _iterated_ to ? GetIteratorDirect(_O_).
-          1. Let _closure_ be a new Abstract Closure with no parameters that captures _iterated_ and _mapper_ and performs the following steps when called:
-            1. Let _counter_ be 0.
-            1. Repeat,
-              1. Let _value_ be ? IteratorStepValue(_iterated_).
-              1. If _value_ is ~done~, return ReturnCompletion(*undefined*).
-              1. Let _mapped_ be Completion(Call(_mapper_, *undefined*, « _value_, 𝔽(_counter_) »)).
-              1. IfAbruptCloseIterator(_mapped_, _iterated_).
-              1. Let _innerIterator_ be Completion(GetIteratorFlattenable(_mapped_, ~reject-primitives~)).
-              1. IfAbruptCloseIterator(_innerIterator_, _iterated_).
-              1. Let _innerAlive_ be *true*.
-              1. Repeat, while _innerAlive_ is *true*,
-                1. Let _innerValue_ be Completion(IteratorStepValue(_innerIterator_)).
-                1. IfAbruptCloseIterator(_innerValue_, _iterated_).
-                1. If _innerValue_ is ~done~, then
-                  1. Set _innerAlive_ to *false*.
-                1. Else,
-                  1. Let _completion_ be Completion(Yield(_innerValue_)).
-                  1. If _completion_ is an abrupt completion, then
-                    1. Let _backupCompletion_ be Completion(IteratorClose(_innerIterator_, _completion_)).
-                    1. IfAbruptCloseIterator(_backupCompletion_, _iterated_).
-                    1. Return ? IteratorClose(_iterated_, _completion_).
-              1. Set _counter_ to _counter_ + 1.
-          1. Let _result_ be CreateIteratorFromClosure(_closure_, *"Iterator Helper"*, %IteratorHelperPrototype%, « [[UnderlyingIterator]] »).
-          1. Set _result_.[[UnderlyingIterator]] to _iterated_.
-          1. Return _result_.
-        </emu-alg>
-      </emu-clause>
-
-      <emu-clause id="sec-iterator.prototype.foreach">
-        <h1>Iterator.prototype.forEach ( _procedure_ )</h1>
-        <p>This method performs the following steps when called:</p>
-        <emu-alg>
-          1. Let _O_ be the *this* value.
-          1. If _O_ is not an Object, throw a *TypeError* exception.
-          1. Let _iterated_ be the Iterator Record { [[Iterator]]: _O_, [[NextMethod]]: *undefined*, [[Done]]: *false* }.
-          1. If IsCallable(_procedure_) is *false*, then
-            1. Let _error_ be ThrowCompletion(a newly created *TypeError* object).
-            1. Return ? IteratorClose(_iterated_, _error_).
-          1. Set _iterated_ to ? GetIteratorDirect(_O_).
-          1. Let _counter_ be 0.
-          1. Repeat,
-            1. Let _value_ be ? IteratorStepValue(_iterated_).
-            1. If _value_ is ~done~, return *undefined*.
-            1. Let _result_ be Completion(Call(_procedure_, *undefined*, « _value_, 𝔽(_counter_) »)).
-            1. IfAbruptCloseIterator(_result_, _iterated_).
-            1. Set _counter_ to _counter_ + 1.
-        </emu-alg>
-      </emu-clause>
-
-      <emu-clause id="sec-iterator.prototype.map">
-        <h1>Iterator.prototype.map ( _mapper_ )</h1>
-        <p>This method performs the following steps when called:</p>
-        <emu-alg>
-          1. Let _O_ be the *this* value.
-          1. If _O_ is not an Object, throw a *TypeError* exception.
-          1. Let _iterated_ be the Iterator Record { [[Iterator]]: _O_, [[NextMethod]]: *undefined*, [[Done]]: *false* }.
-          1. If IsCallable(_mapper_) is *false*, then
-            1. Let _error_ be ThrowCompletion(a newly created *TypeError* object).
-            1. Return ? IteratorClose(_iterated_, _error_).
-          1. Set _iterated_ to ? GetIteratorDirect(_O_).
-          1. Let _closure_ be a new Abstract Closure with no parameters that captures _iterated_ and _mapper_ and performs the following steps when called:
-            1. Let _counter_ be 0.
-            1. Repeat,
-              1. Let _value_ be ? IteratorStepValue(_iterated_).
-              1. If _value_ is ~done~, return ReturnCompletion(*undefined*).
-              1. Let _mapped_ be Completion(Call(_mapper_, *undefined*, « _value_, 𝔽(_counter_) »)).
-              1. IfAbruptCloseIterator(_mapped_, _iterated_).
-              1. Let _completion_ be Completion(Yield(_mapped_)).
-              1. IfAbruptCloseIterator(_completion_, _iterated_).
-              1. Set _counter_ to _counter_ + 1.
-          1. Let _result_ be CreateIteratorFromClosure(_closure_, *"Iterator Helper"*, %IteratorHelperPrototype%, « [[UnderlyingIterator]] »).
-          1. Set _result_.[[UnderlyingIterator]] to _iterated_.
-          1. Return _result_.
-        </emu-alg>
-      </emu-clause>
-
-      <emu-clause id="sec-iterator.prototype.reduce">
-        <h1>Iterator.prototype.reduce ( _reducer_ [ , _initialValue_ ] )</h1>
-        <p>This method performs the following steps when called:</p>
-        <emu-alg>
-          1. Let _O_ be the *this* value.
-          1. If _O_ is not an Object, throw a *TypeError* exception.
-          1. Let _iterated_ be the Iterator Record { [[Iterator]]: _O_, [[NextMethod]]: *undefined*, [[Done]]: *false* }.
-          1. If IsCallable(_reducer_) is *false*, then
-            1. Let _error_ be ThrowCompletion(a newly created *TypeError* object).
-            1. Return ? IteratorClose(_iterated_, _error_).
-          1. Set _iterated_ to ? GetIteratorDirect(_O_).
-          1. If _initialValue_ is not present, then
-            1. Let _accumulator_ be ? IteratorStepValue(_iterated_).
-            1. If _accumulator_ is ~done~, throw a *TypeError* exception.
-            1. Let _counter_ be 1.
-          1. Else,
-            1. Let _accumulator_ be _initialValue_.
-            1. Let _counter_ be 0.
-          1. Repeat,
-            1. Let _value_ be ? IteratorStepValue(_iterated_).
-            1. If _value_ is ~done~, return _accumulator_.
-            1. Let _result_ be Completion(Call(_reducer_, *undefined*, « _accumulator_, _value_, 𝔽(_counter_) »)).
-            1. IfAbruptCloseIterator(_result_, _iterated_).
-            1. Set _accumulator_ to _result_.
-            1. Set _counter_ to _counter_ + 1.
-        </emu-alg>
-      </emu-clause>
-
-      <emu-clause id="sec-iterator.prototype.some">
-        <h1>Iterator.prototype.some ( _predicate_ )</h1>
-        <p>This method performs the following steps when called:</p>
-        <emu-alg>
-          1. Let _O_ be the *this* value.
-          1. If _O_ is not an Object, throw a *TypeError* exception.
-          1. Let _iterated_ be the Iterator Record { [[Iterator]]: _O_, [[NextMethod]]: *undefined*, [[Done]]: *false* }.
-          1. If IsCallable(_predicate_) is *false*, then
-            1. Let _error_ be ThrowCompletion(a newly created *TypeError* object).
-            1. Return ? IteratorClose(_iterated_, _error_).
-          1. Set _iterated_ to ? GetIteratorDirect(_O_).
-          1. Let _counter_ be 0.
-          1. Repeat,
-            1. Let _value_ be ? IteratorStepValue(_iterated_).
-            1. If _value_ is ~done~, return *false*.
-            1. Let _result_ be Completion(Call(_predicate_, *undefined*, « _value_, 𝔽(_counter_) »)).
-            1. IfAbruptCloseIterator(_result_, _iterated_).
-            1. If ToBoolean(_result_) is *true*, return ? IteratorClose(_iterated_, NormalCompletion(*true*)).
-            1. Set _counter_ to _counter_ + 1.
-        </emu-alg>
-      </emu-clause>
-
-      <emu-clause id="sec-iterator.prototype.take">
-        <h1>Iterator.prototype.take ( _limit_ )</h1>
-        <p>This method performs the following steps when called:</p>
-        <emu-alg>
-          1. Let _O_ be the *this* value.
-          1. If _O_ is not an Object, throw a *TypeError* exception.
-          1. Let _iterated_ be the Iterator Record { [[Iterator]]: _O_, [[NextMethod]]: *undefined*, [[Done]]: *false* }.
-          1. Let _numLimit_ be Completion(ToNumber(_limit_)).
-          1. IfAbruptCloseIterator(_numLimit_, _iterated_).
-          1. If _numLimit_ is *NaN*, then
-            1. Let _error_ be ThrowCompletion(a newly created *RangeError* object).
-            1. Return ? IteratorClose(_iterated_, _error_).
-          1. Let _integerLimit_ be ! ToIntegerOrInfinity(_numLimit_).
-          1. If _integerLimit_ &lt; 0, then
-            1. Let _error_ be ThrowCompletion(a newly created *RangeError* object).
-            1. Return ? IteratorClose(_iterated_, _error_).
-          1. Set _iterated_ to ? GetIteratorDirect(_O_).
-          1. Let _closure_ be a new Abstract Closure with no parameters that captures _iterated_ and _integerLimit_ and performs the following steps when called:
-            1. Let _remaining_ be _integerLimit_.
-            1. Repeat,
-              1. If _remaining_ = 0, then
-                1. Return ? IteratorClose(_iterated_, ReturnCompletion(*undefined*)).
-              1. If _remaining_ ≠ +∞, then
-                1. Set _remaining_ to _remaining_ - 1.
-              1. Let _value_ be ? IteratorStepValue(_iterated_).
-              1. If _value_ is ~done~, return ReturnCompletion(*undefined*).
-              1. Let _completion_ be Completion(Yield(_value_)).
-              1. IfAbruptCloseIterator(_completion_, _iterated_).
-          1. Let _result_ be CreateIteratorFromClosure(_closure_, *"Iterator Helper"*, %IteratorHelperPrototype%, « [[UnderlyingIterator]] »).
-          1. Set _result_.[[UnderlyingIterator]] to _iterated_.
-          1. Return _result_.
-        </emu-alg>
-      </emu-clause>
-
-      <emu-clause id="sec-iterator.prototype.toarray">
-        <h1>Iterator.prototype.toArray ( )</h1>
-        <p>This method performs the following steps when called:</p>
-        <emu-alg>
-          1. Let _O_ be the *this* value.
-          1. If _O_ is not an Object, throw a *TypeError* exception.
-          1. Let _iterated_ be ? GetIteratorDirect(_O_).
-          1. Let _items_ be a new empty List.
-          1. Repeat,
-            1. Let _value_ be ? IteratorStepValue(_iterated_).
-            1. If _value_ is ~done~, return CreateArrayFromList(_items_).
-            1. Append _value_ to _items_.
-        </emu-alg>
-      </emu-clause>
-
-      <emu-clause oldids="sec-%iteratorprototype%-@@iterator,sec-%iteratorprototype%-%symbol.iterator%" id="sec-iterator.prototype-%symbol.iterator%">
-        <h1>Iterator.prototype [ %Symbol.iterator% ] ( )</h1>
-        <p>This function performs the following steps when called:</p>
-        <emu-alg>
-          1. Return the *this* value.
-        </emu-alg>
-        <p>The value of the *"name"* property of this function is *"[Symbol.iterator]"*.</p>
-      </emu-clause>
-
-      <emu-clause id="sec-iterator.prototype-%symbol.tostringtag%">
-        <h1>Iterator.prototype [ %Symbol.toStringTag% ]</h1>
-        <p>`Iterator.prototype[%Symbol.toStringTag%]` is an accessor property with attributes { [[Enumerable]]: *false*, [[Configurable]]: *true* }. The [[Get]] and [[Set]] attributes are defined as follows:</p>
-
-        <emu-clause id="sec-get-iterator.prototype-%symbol.tostringtag%">
-          <h1>get Iterator.prototype [ %Symbol.toStringTag% ]</h1>
-          <p>The value of the [[Get]] attribute is a built-in function that requires no arguments. It performs the following steps when called:</p>
-          <emu-alg>
-            1. Return *"Iterator"*.
+            1. Let _result_ be CreateIteratorFromClosure(_closure_, *"Iterator Helper"*, %IteratorHelperPrototype%, « [[UnderlyingIterator]] »).
+            1. Set _result_.[[UnderlyingIterator]] to _iterated_.
+            1. Return _result_.
           </emu-alg>
         </emu-clause>
 
-        <emu-clause id="sec-set-iterator.prototype-%symbol.tostringtag%">
-          <h1>set Iterator.prototype [ %Symbol.toStringTag% ]</h1>
-          <p>The value of the [[Set]] attribute is a built-in function that takes an argument _v_. It performs the following steps when called:</p>
+        <emu-clause id="sec-iterator.prototype.every">
+          <h1>Iterator.prototype.every ( _predicate_ )</h1>
+          <p>This method performs the following steps when called:</p>
           <emu-alg>
-            1. Perform ? SetterThatIgnoresPrototypeProperties(*this* value, %Iterator.prototype%, %Symbol.toStringTag%, _v_).
-            1. Return *undefined*.
+            1. Let _O_ be the *this* value.
+            1. If _O_ is not an Object, throw a *TypeError* exception.
+            1. Let _iterated_ be the Iterator Record { [[Iterator]]: _O_, [[NextMethod]]: *undefined*, [[Done]]: *false* }.
+            1. If IsCallable(_predicate_) is *false*, then
+              1. Let _error_ be ThrowCompletion(a newly created *TypeError* object).
+              1. Return ? IteratorClose(_iterated_, _error_).
+            1. Set _iterated_ to ? GetIteratorDirect(_O_).
+            1. Let _counter_ be 0.
+            1. Repeat,
+              1. Let _value_ be ? IteratorStepValue(_iterated_).
+              1. If _value_ is ~done~, return *true*.
+              1. Let _result_ be Completion(Call(_predicate_, *undefined*, « _value_, 𝔽(_counter_) »)).
+              1. IfAbruptCloseIterator(_result_, _iterated_).
+              1. If ToBoolean(_result_) is *false*, return ? IteratorClose(_iterated_, NormalCompletion(*false*)).
+              1. Set _counter_ to _counter_ + 1.
           </emu-alg>
         </emu-clause>
 
-        <emu-note>
-          <p>Unlike the %Symbol.toStringTag% property on most built-in prototypes, for web-compatibility reasons this property must be an accessor.</p>
-        </emu-note>
+        <emu-clause id="sec-iterator.prototype.filter">
+          <h1>Iterator.prototype.filter ( _predicate_ )</h1>
+          <p>This method performs the following steps when called:</p>
+          <emu-alg>
+            1. Let _O_ be the *this* value.
+            1. If _O_ is not an Object, throw a *TypeError* exception.
+            1. Let _iterated_ be the Iterator Record { [[Iterator]]: _O_, [[NextMethod]]: *undefined*, [[Done]]: *false* }.
+            1. If IsCallable(_predicate_) is *false*, then
+              1. Let _error_ be ThrowCompletion(a newly created *TypeError* object).
+              1. Return ? IteratorClose(_iterated_, _error_).
+            1. Set _iterated_ to ? GetIteratorDirect(_O_).
+            1. Let _closure_ be a new Abstract Closure with no parameters that captures _iterated_ and _predicate_ and performs the following steps when called:
+              1. Let _counter_ be 0.
+              1. Repeat,
+                1. Let _value_ be ? IteratorStepValue(_iterated_).
+                1. If _value_ is ~done~, return ReturnCompletion(*undefined*).
+                1. Let _selected_ be Completion(Call(_predicate_, *undefined*, « _value_, 𝔽(_counter_) »)).
+                1. IfAbruptCloseIterator(_selected_, _iterated_).
+                1. If ToBoolean(_selected_) is *true*, then
+                  1. Let _completion_ be Completion(Yield(_value_)).
+                  1. IfAbruptCloseIterator(_completion_, _iterated_).
+                1. Set _counter_ to _counter_ + 1.
+            1. Let _result_ be CreateIteratorFromClosure(_closure_, *"Iterator Helper"*, %IteratorHelperPrototype%, « [[UnderlyingIterator]] »).
+            1. Set _result_.[[UnderlyingIterator]] to _iterated_.
+            1. Return _result_.
+          </emu-alg>
+        </emu-clause>
+
+        <emu-clause id="sec-iterator.prototype.find">
+          <h1>Iterator.prototype.find ( _predicate_ )</h1>
+          <p>This method performs the following steps when called:</p>
+          <emu-alg>
+            1. Let _O_ be the *this* value.
+            1. If _O_ is not an Object, throw a *TypeError* exception.
+            1. Let _iterated_ be the Iterator Record { [[Iterator]]: _O_, [[NextMethod]]: *undefined*, [[Done]]: *false* }.
+            1. If IsCallable(_predicate_) is *false*, then
+              1. Let _error_ be ThrowCompletion(a newly created *TypeError* object).
+              1. Return ? IteratorClose(_iterated_, _error_).
+            1. Set _iterated_ to ? GetIteratorDirect(_O_).
+            1. Let _counter_ be 0.
+            1. Repeat,
+              1. Let _value_ be ? IteratorStepValue(_iterated_).
+              1. If _value_ is ~done~, return *undefined*.
+              1. Let _result_ be Completion(Call(_predicate_, *undefined*, « _value_, 𝔽(_counter_) »)).
+              1. IfAbruptCloseIterator(_result_, _iterated_).
+              1. If ToBoolean(_result_) is *true*, return ? IteratorClose(_iterated_, NormalCompletion(_value_)).
+              1. Set _counter_ to _counter_ + 1.
+          </emu-alg>
+        </emu-clause>
+
+        <emu-clause id="sec-iterator.prototype.flatmap">
+          <h1>Iterator.prototype.flatMap ( _mapper_ )</h1>
+          <p>This method performs the following steps when called:</p>
+          <emu-alg>
+            1. Let _O_ be the *this* value.
+            1. If _O_ is not an Object, throw a *TypeError* exception.
+            1. Let _iterated_ be the Iterator Record { [[Iterator]]: _O_, [[NextMethod]]: *undefined*, [[Done]]: *false* }.
+            1. If IsCallable(_mapper_) is *false*, then
+              1. Let _error_ be ThrowCompletion(a newly created *TypeError* object).
+              1. Return ? IteratorClose(_iterated_, _error_).
+            1. Set _iterated_ to ? GetIteratorDirect(_O_).
+            1. Let _closure_ be a new Abstract Closure with no parameters that captures _iterated_ and _mapper_ and performs the following steps when called:
+              1. Let _counter_ be 0.
+              1. Repeat,
+                1. Let _value_ be ? IteratorStepValue(_iterated_).
+                1. If _value_ is ~done~, return ReturnCompletion(*undefined*).
+                1. Let _mapped_ be Completion(Call(_mapper_, *undefined*, « _value_, 𝔽(_counter_) »)).
+                1. IfAbruptCloseIterator(_mapped_, _iterated_).
+                1. Let _innerIterator_ be Completion(GetIteratorFlattenable(_mapped_, ~reject-primitives~)).
+                1. IfAbruptCloseIterator(_innerIterator_, _iterated_).
+                1. Let _innerAlive_ be *true*.
+                1. Repeat, while _innerAlive_ is *true*,
+                  1. Let _innerValue_ be Completion(IteratorStepValue(_innerIterator_)).
+                  1. IfAbruptCloseIterator(_innerValue_, _iterated_).
+                  1. If _innerValue_ is ~done~, then
+                    1. Set _innerAlive_ to *false*.
+                  1. Else,
+                    1. Let _completion_ be Completion(Yield(_innerValue_)).
+                    1. If _completion_ is an abrupt completion, then
+                      1. Let _backupCompletion_ be Completion(IteratorClose(_innerIterator_, _completion_)).
+                      1. IfAbruptCloseIterator(_backupCompletion_, _iterated_).
+                      1. Return ? IteratorClose(_iterated_, _completion_).
+                1. Set _counter_ to _counter_ + 1.
+            1. Let _result_ be CreateIteratorFromClosure(_closure_, *"Iterator Helper"*, %IteratorHelperPrototype%, « [[UnderlyingIterator]] »).
+            1. Set _result_.[[UnderlyingIterator]] to _iterated_.
+            1. Return _result_.
+          </emu-alg>
+        </emu-clause>
+
+        <emu-clause id="sec-iterator.prototype.foreach">
+          <h1>Iterator.prototype.forEach ( _procedure_ )</h1>
+          <p>This method performs the following steps when called:</p>
+          <emu-alg>
+            1. Let _O_ be the *this* value.
+            1. If _O_ is not an Object, throw a *TypeError* exception.
+            1. Let _iterated_ be the Iterator Record { [[Iterator]]: _O_, [[NextMethod]]: *undefined*, [[Done]]: *false* }.
+            1. If IsCallable(_procedure_) is *false*, then
+              1. Let _error_ be ThrowCompletion(a newly created *TypeError* object).
+              1. Return ? IteratorClose(_iterated_, _error_).
+            1. Set _iterated_ to ? GetIteratorDirect(_O_).
+            1. Let _counter_ be 0.
+            1. Repeat,
+              1. Let _value_ be ? IteratorStepValue(_iterated_).
+              1. If _value_ is ~done~, return *undefined*.
+              1. Let _result_ be Completion(Call(_procedure_, *undefined*, « _value_, 𝔽(_counter_) »)).
+              1. IfAbruptCloseIterator(_result_, _iterated_).
+              1. Set _counter_ to _counter_ + 1.
+          </emu-alg>
+        </emu-clause>
+
+        <emu-clause id="sec-iterator.prototype.map">
+          <h1>Iterator.prototype.map ( _mapper_ )</h1>
+          <p>This method performs the following steps when called:</p>
+          <emu-alg>
+            1. Let _O_ be the *this* value.
+            1. If _O_ is not an Object, throw a *TypeError* exception.
+            1. Let _iterated_ be the Iterator Record { [[Iterator]]: _O_, [[NextMethod]]: *undefined*, [[Done]]: *false* }.
+            1. If IsCallable(_mapper_) is *false*, then
+              1. Let _error_ be ThrowCompletion(a newly created *TypeError* object).
+              1. Return ? IteratorClose(_iterated_, _error_).
+            1. Set _iterated_ to ? GetIteratorDirect(_O_).
+            1. Let _closure_ be a new Abstract Closure with no parameters that captures _iterated_ and _mapper_ and performs the following steps when called:
+              1. Let _counter_ be 0.
+              1. Repeat,
+                1. Let _value_ be ? IteratorStepValue(_iterated_).
+                1. If _value_ is ~done~, return ReturnCompletion(*undefined*).
+                1. Let _mapped_ be Completion(Call(_mapper_, *undefined*, « _value_, 𝔽(_counter_) »)).
+                1. IfAbruptCloseIterator(_mapped_, _iterated_).
+                1. Let _completion_ be Completion(Yield(_mapped_)).
+                1. IfAbruptCloseIterator(_completion_, _iterated_).
+                1. Set _counter_ to _counter_ + 1.
+            1. Let _result_ be CreateIteratorFromClosure(_closure_, *"Iterator Helper"*, %IteratorHelperPrototype%, « [[UnderlyingIterator]] »).
+            1. Set _result_.[[UnderlyingIterator]] to _iterated_.
+            1. Return _result_.
+          </emu-alg>
+        </emu-clause>
+
+        <emu-clause id="sec-iterator.prototype.reduce">
+          <h1>Iterator.prototype.reduce ( _reducer_ [ , _initialValue_ ] )</h1>
+          <p>This method performs the following steps when called:</p>
+          <emu-alg>
+            1. Let _O_ be the *this* value.
+            1. If _O_ is not an Object, throw a *TypeError* exception.
+            1. Let _iterated_ be the Iterator Record { [[Iterator]]: _O_, [[NextMethod]]: *undefined*, [[Done]]: *false* }.
+            1. If IsCallable(_reducer_) is *false*, then
+              1. Let _error_ be ThrowCompletion(a newly created *TypeError* object).
+              1. Return ? IteratorClose(_iterated_, _error_).
+            1. Set _iterated_ to ? GetIteratorDirect(_O_).
+            1. If _initialValue_ is not present, then
+              1. Let _accumulator_ be ? IteratorStepValue(_iterated_).
+              1. If _accumulator_ is ~done~, throw a *TypeError* exception.
+              1. Let _counter_ be 1.
+            1. Else,
+              1. Let _accumulator_ be _initialValue_.
+              1. Let _counter_ be 0.
+            1. Repeat,
+              1. Let _value_ be ? IteratorStepValue(_iterated_).
+              1. If _value_ is ~done~, return _accumulator_.
+              1. Let _result_ be Completion(Call(_reducer_, *undefined*, « _accumulator_, _value_, 𝔽(_counter_) »)).
+              1. IfAbruptCloseIterator(_result_, _iterated_).
+              1. Set _accumulator_ to _result_.
+              1. Set _counter_ to _counter_ + 1.
+          </emu-alg>
+        </emu-clause>
+
+        <emu-clause id="sec-iterator.prototype.some">
+          <h1>Iterator.prototype.some ( _predicate_ )</h1>
+          <p>This method performs the following steps when called:</p>
+          <emu-alg>
+            1. Let _O_ be the *this* value.
+            1. If _O_ is not an Object, throw a *TypeError* exception.
+            1. Let _iterated_ be the Iterator Record { [[Iterator]]: _O_, [[NextMethod]]: *undefined*, [[Done]]: *false* }.
+            1. If IsCallable(_predicate_) is *false*, then
+              1. Let _error_ be ThrowCompletion(a newly created *TypeError* object).
+              1. Return ? IteratorClose(_iterated_, _error_).
+            1. Set _iterated_ to ? GetIteratorDirect(_O_).
+            1. Let _counter_ be 0.
+            1. Repeat,
+              1. Let _value_ be ? IteratorStepValue(_iterated_).
+              1. If _value_ is ~done~, return *false*.
+              1. Let _result_ be Completion(Call(_predicate_, *undefined*, « _value_, 𝔽(_counter_) »)).
+              1. IfAbruptCloseIterator(_result_, _iterated_).
+              1. If ToBoolean(_result_) is *true*, return ? IteratorClose(_iterated_, NormalCompletion(*true*)).
+              1. Set _counter_ to _counter_ + 1.
+          </emu-alg>
+        </emu-clause>
+
+        <emu-clause id="sec-iterator.prototype.take">
+          <h1>Iterator.prototype.take ( _limit_ )</h1>
+          <p>This method performs the following steps when called:</p>
+          <emu-alg>
+            1. Let _O_ be the *this* value.
+            1. If _O_ is not an Object, throw a *TypeError* exception.
+            1. Let _iterated_ be the Iterator Record { [[Iterator]]: _O_, [[NextMethod]]: *undefined*, [[Done]]: *false* }.
+            1. Let _numLimit_ be Completion(ToNumber(_limit_)).
+            1. IfAbruptCloseIterator(_numLimit_, _iterated_).
+            1. If _numLimit_ is *NaN*, then
+              1. Let _error_ be ThrowCompletion(a newly created *RangeError* object).
+              1. Return ? IteratorClose(_iterated_, _error_).
+            1. Let _integerLimit_ be ! ToIntegerOrInfinity(_numLimit_).
+            1. If _integerLimit_ &lt; 0, then
+              1. Let _error_ be ThrowCompletion(a newly created *RangeError* object).
+              1. Return ? IteratorClose(_iterated_, _error_).
+            1. Set _iterated_ to ? GetIteratorDirect(_O_).
+            1. Let _closure_ be a new Abstract Closure with no parameters that captures _iterated_ and _integerLimit_ and performs the following steps when called:
+              1. Let _remaining_ be _integerLimit_.
+              1. Repeat,
+                1. If _remaining_ = 0, then
+                  1. Return ? IteratorClose(_iterated_, ReturnCompletion(*undefined*)).
+                1. If _remaining_ ≠ +∞, then
+                  1. Set _remaining_ to _remaining_ - 1.
+                1. Let _value_ be ? IteratorStepValue(_iterated_).
+                1. If _value_ is ~done~, return ReturnCompletion(*undefined*).
+                1. Let _completion_ be Completion(Yield(_value_)).
+                1. IfAbruptCloseIterator(_completion_, _iterated_).
+            1. Let _result_ be CreateIteratorFromClosure(_closure_, *"Iterator Helper"*, %IteratorHelperPrototype%, « [[UnderlyingIterator]] »).
+            1. Set _result_.[[UnderlyingIterator]] to _iterated_.
+            1. Return _result_.
+          </emu-alg>
+        </emu-clause>
+
+        <emu-clause id="sec-iterator.prototype.toarray">
+          <h1>Iterator.prototype.toArray ( )</h1>
+          <p>This method performs the following steps when called:</p>
+          <emu-alg>
+            1. Let _O_ be the *this* value.
+            1. If _O_ is not an Object, throw a *TypeError* exception.
+            1. Let _iterated_ be ? GetIteratorDirect(_O_).
+            1. Let _items_ be a new empty List.
+            1. Repeat,
+              1. Let _value_ be ? IteratorStepValue(_iterated_).
+              1. If _value_ is ~done~, return CreateArrayFromList(_items_).
+              1. Append _value_ to _items_.
+          </emu-alg>
+        </emu-clause>
+
+        <emu-clause oldids="sec-%iteratorprototype%-@@iterator,sec-%iteratorprototype%-%symbol.iterator%" id="sec-iterator.prototype-%symbol.iterator%">
+          <h1>Iterator.prototype [ %Symbol.iterator% ] ( )</h1>
+          <p>This function performs the following steps when called:</p>
+          <emu-alg>
+            1. Return the *this* value.
+          </emu-alg>
+          <p>The value of the *"name"* property of this function is *"[Symbol.iterator]"*.</p>
+        </emu-clause>
+
+        <emu-clause id="sec-iterator.prototype-%symbol.tostringtag%">
+          <h1>Iterator.prototype [ %Symbol.toStringTag% ]</h1>
+          <p>`Iterator.prototype[%Symbol.toStringTag%]` is an accessor property with attributes { [[Enumerable]]: *false*, [[Configurable]]: *true* }. The [[Get]] and [[Set]] attributes are defined as follows:</p>
+
+          <emu-clause id="sec-get-iterator.prototype-%symbol.tostringtag%">
+            <h1>get Iterator.prototype [ %Symbol.toStringTag% ]</h1>
+            <p>The value of the [[Get]] attribute is a built-in function that requires no arguments. It performs the following steps when called:</p>
+            <emu-alg>
+              1. Return *"Iterator"*.
+            </emu-alg>
+          </emu-clause>
+
+          <emu-clause id="sec-set-iterator.prototype-%symbol.tostringtag%">
+            <h1>set Iterator.prototype [ %Symbol.toStringTag% ]</h1>
+            <p>The value of the [[Set]] attribute is a built-in function that takes an argument _v_. It performs the following steps when called:</p>
+            <emu-alg>
+              1. Perform ? SetterThatIgnoresPrototypeProperties(*this* value, %Iterator.prototype%, %Symbol.toStringTag%, _v_).
+              1. Return *undefined*.
+            </emu-alg>
+          </emu-clause>
+
+          <emu-note>
+            <p>Unlike the %Symbol.toStringTag% property on most built-in prototypes, for web-compatibility reasons this property must be an accessor.</p>
+          </emu-note>
+        </emu-clause>
       </emu-clause>
     </emu-clause>
 
@@ -51190,9 +51208,9 @@ THH:mm:ss.sss
 <emu-clause id="sec-memory-model">
   <h1>Memory Model</h1>
   <p>The memory consistency model, or <dfn>memory model</dfn>, specifies the possible orderings of Shared Data Block events, arising via accessing TypedArray instances backed by a SharedArrayBuffer and via methods on the Atomics object. When the program has no data races (defined below), the ordering of events appears as sequentially consistent, i.e., as an interleaving of actions from each agent. When the program has data races, shared memory operations may appear sequentially inconsistent. For example, programs may exhibit causality-violating behaviour and other astonishments. These astonishments arise from compiler transforms and the design of CPUs (e.g., out-of-order execution and speculation). The memory model defines both the precise conditions under which a program exhibits sequentially consistent behaviour as well as the possible values read from data races. To wit, there is no undefined behaviour.</p>
-  <p>The memory model is defined as relational constraints on events introduced by abstract operations on SharedArrayBuffer or by methods on the Atomics object during an evaluation.</p>
+  <p>The memory model is defined as relational constraints on Memory events introduced by abstract operations on SharedArrayBuffer or by methods on the Atomics object during an evaluation.</p>
   <emu-note>
-    <p>This section provides an axiomatic model on events introduced by the abstract operations on SharedArrayBuffers. It bears stressing that the model is not expressible algorithmically, unlike the rest of this specification. The nondeterministic introduction of events by abstract operations is the interface between the operational semantics of ECMAScript evaluation and the axiomatic semantics of the memory model. The semantics of these events is defined by considering graphs of all events in an evaluation. These are neither Static Semantics nor Runtime Semantics. There is no demonstrated algorithmic implementation, but instead a set of constraints that determine if a particular event graph is allowed or disallowed.</p>
+    <p>This section provides an axiomatic model on Memory events introduced by the abstract operations on SharedArrayBuffers. It bears stressing that the model is not expressible algorithmically, unlike the rest of this specification. The nondeterministic introduction of events by abstract operations is the interface between the operational semantics of ECMAScript evaluation and the axiomatic semantics of the memory model. The semantics of these events is defined by considering graphs of all events in an evaluation. These are neither Static Semantics nor Runtime Semantics. There is no demonstrated algorithmic implementation, but instead a set of constraints that determine if a particular event graph is allowed or disallowed.</p>
   </emu-note>
 
   <emu-clause id="sec-memory-model-fundamentals">
@@ -51201,7 +51219,7 @@ THH:mm:ss.sss
     <emu-note>
       <p>No orderings weaker than sequentially consistent and stronger than unordered, such as release-acquire, are supported.</p>
     </emu-note>
-    <p>A <dfn variants="Shared Data Block events">Shared Data Block event</dfn> is either a <dfn>ReadSharedMemory</dfn>, <dfn>WriteSharedMemory</dfn>, or <dfn>ReadModifyWriteSharedMemory</dfn> Record.</p>
+    <p>A <dfn variants="Shared Data Block events">Shared Data Block event</dfn> is either a <dfn>ReadSharedMemory</dfn>, <dfn>WriteSharedMemory</dfn>, or <dfn>ReadModifyWriteSharedMemory</dfn> Record. A <dfn variants="read events">read event</dfn> is either a ReadSharedMemory or a ReadModifyWriteSharedMemory. A <dfn variants="write events">write event</dfn> is either a WriteSharedMemory or a ReadModifyWriteSharedMemory.</p>
 
     <emu-table id="table-readsharedmemory-fields" caption="ReadSharedMemory Event Fields">
       <table>
@@ -51220,7 +51238,7 @@ THH:mm:ss.sss
         <tr>
           <td>[[NoTear]]</td>
           <td>a Boolean</td>
-          <td>Whether this event is allowed to read from multiple write events with equal range as this event.</td>
+          <td>Whether this event is allowed to read from multiple write events with equal memory range as this event.</td>
         </tr>
         <tr>
           <td>[[Block]]</td>
@@ -51257,7 +51275,7 @@ THH:mm:ss.sss
         <tr>
           <td>[[NoTear]]</td>
           <td>a Boolean</td>
-          <td>Whether this event is allowed to be read from multiple read events with equal range as this event.</td>
+          <td>Whether this event is allowed to be read from multiple read events with equal memory range as this event.</td>
         </tr>
         <tr>
           <td>[[Block]]</td>
@@ -51329,10 +51347,8 @@ THH:mm:ss.sss
       </table>
     </emu-table>
 
-    <p>These events are introduced by abstract operations or by methods on the Atomics object.</p>
-    <p>Some operations may also introduce <dfn>Synchronize</dfn> events. A <dfn variants="Synchronize events">Synchronize event</dfn> has no fields, and exists purely to directly constrain the permitted orderings of other events.</p>
-    <p>In addition to Shared Data Block and Synchronize events, there are host-specific events.</p>
-    <p>Let the range of a ReadSharedMemory, WriteSharedMemory, or ReadModifyWriteSharedMemory event be the Set of contiguous integers from its [[ByteIndex]] to [[ByteIndex]] + [[ElementSize]] - 1. Two events' ranges are equal when the events have the same [[Block]], and the ranges are element-wise equal. Two events' ranges are overlapping when the events have the same [[Block]], the ranges are not equal and their intersection is non-empty. Two events' ranges are disjoint when the events do not have the same [[Block]] or their ranges are neither equal nor overlapping.</p>
+    <p>Shared Data Block events are introduced to candidate execution Agent Events Records by abstract operations or by methods on the Atomics object. Some operations also introduce <dfn variants="Synchronize,Synchronize event">Synchronize events</dfn>, which have no fields and exist purely to directly constrain the permitted orderings of other events. And finally, there are host-specific events. A <dfn variants="Memory events">Memory event</dfn> is either a Shared Data Block event, Synchronize event, or such a host-specific event.</p>
+    <p>Let the <dfn variants="memory ranges">memory range</dfn> of a Shared Data Block event _e_ be the Set of all integers in the interval from _e_.[[ByteIndex]] (inclusive) to _e_.[[ByteIndex]] + _e_.[[ElementSize]] (exclusive). Two events' memory ranges are equal when the events have the same [[Block]], [[ByteIndex]], and [[ElementSize]]. Two events' memory ranges are overlapping when the events have the same [[Block]], the ranges are not equal, and their intersection is non-empty. Two events' memory ranges are disjoint when the events do not have the same [[Block]] or their ranges are neither equal nor overlapping.</p>
     <emu-note>
       <p>Examples of host-specific synchronizing events that should be accounted for are: sending a SharedArrayBuffer from one agent to another (e.g., by `postMessage` in a browser), starting and stopping agents, and communicating within the agent cluster via channels other than shared memory. For a particular execution _execution_, those events are provided by the host via the host-synchronizes-with strict partial order. Additionally, hosts can add host-specific synchronizing events to _execution_.[[EventList]] so as to participate in the is-agent-order-before Relation.</p>
     </emu-note>
@@ -51358,7 +51374,7 @@ THH:mm:ss.sss
         </tr>
         <tr>
           <td>[[EventList]]</td>
-          <td>a List of events</td>
+          <td>a List of Memory events</td>
           <td>Events are appended to the list during evaluation.</td>
         </tr>
         <tr>
@@ -51411,7 +51427,7 @@ THH:mm:ss.sss
         <tr>
           <td>[[EventsRecords]]</td>
           <td>a List of Agent Events Records</td>
-          <td>Maps an agent to Lists of events appended during the evaluation.</td>
+          <td>Maps an agent to Lists of Memory events appended during the evaluation.</td>
         </tr>
         <tr>
           <td>[[ChosenValues]]</td>
@@ -51431,14 +51447,14 @@ THH:mm:ss.sss
       <h1>
         EventSet (
           _execution_: a candidate execution,
-        ): a Set of events
+        ): a Set of Memory events
       </h1>
       <dl class="header">
       </dl>
       <emu-alg>
         1. Let _events_ be an empty Set.
         1. For each Agent Events Record _aer_ of _execution_.[[EventsRecords]], do
-          1. For each event _E_ of _aer_.[[EventList]], do
+          1. For each Memory event _E_ of _aer_.[[EventList]], do
             1. Add _E_ to _events_.
         1. Return _events_.
       </emu-alg>
@@ -51448,14 +51464,14 @@ THH:mm:ss.sss
       <h1>
         SharedDataBlockEventSet (
           _execution_: a candidate execution,
-        ): a Set of events
+        ): a Set of Shared Data Block events
       </h1>
       <dl class="header">
       </dl>
       <emu-alg>
         1. Let _events_ be an empty Set.
-        1. For each event _E_ of EventSet(_execution_), do
-          1. If _E_ is a ReadSharedMemory, WriteSharedMemory, or ReadModifyWriteSharedMemory event, add _E_ to _events_.
+        1. For each Memory event _E_ of EventSet(_execution_), do
+          1. If _E_ is a Shared Data Block event, add _E_ to _events_.
         1. Return _events_.
       </emu-alg>
     </emu-clause>
@@ -51464,15 +51480,12 @@ THH:mm:ss.sss
       <h1>
         HostEventSet (
           _execution_: a candidate execution,
-        ): a Set of events
+        ): a Set of Memory events
       </h1>
       <dl class="header">
       </dl>
       <emu-alg>
-        1. Let _events_ be an empty Set.
-        1. For each event _E_ of EventSet(_execution_), do
-          1. If _E_ is not in SharedDataBlockEventSet(_execution_), add _E_ to _events_.
-        1. Return _events_.
+        1. Return a new Set containing all elements of EventSet(_execution_) that are not in SharedDataBlockEventSet(_execution_).
       </emu-alg>
     </emu-clause>
 
@@ -51490,7 +51503,7 @@ THH:mm:ss.sss
         1. Let _byteLocation_ be _byteIndex_.
         1. Let _bytesRead_ be a new empty List.
         1. For each element _W_ of _Ws_, do
-          1. Assert: _W_ has _byteLocation_ in its range.
+          1. Assert: _W_ has _byteLocation_ in its memory range.
           1. Let _payloadIndex_ be _byteLocation_ - _W_.[[ByteIndex]].
           1. If _W_ is a WriteSharedMemory event, then
             1. Let _byte_ be _W_.[[Payload]][_payloadIndex_].
@@ -51531,11 +51544,11 @@ THH:mm:ss.sss
   <emu-clause id="sec-relations-of-candidate-executions">
     <h1>Relations of Candidate Executions</h1>
 
-    <p>The following relations and mathematical functions are parameterized over a particular candidate execution and order its events.</p>
+    <p>The following relations and mathematical functions are parameterized over a particular candidate execution and order its Memory events.</p>
 
     <emu-clause id="sec-agent-order">
       <h1>is-agent-order-before</h1>
-      <p>For a candidate execution _execution_, its <dfn>is-agent-order-before</dfn> Relation is the least Relation on events that satisfies the following.</p>
+      <p>For a candidate execution _execution_, its <dfn>is-agent-order-before</dfn> Relation is the least Relation on Memory events that satisfies the following.</p>
       <ul>
         <li>For events _E_ and _D_, _E_ is-agent-order-before _D_ in _execution_ if there is some Agent Events Record _aer_ in _execution_.[[EventsRecords]] such that _aer_.[[EventList]] contains both _E_ and _D_ and _E_ is before _D_ in List order of _aer_.[[EventList]].</li>
       </ul>
@@ -51547,12 +51560,12 @@ THH:mm:ss.sss
 
     <emu-clause id="sec-reads-bytes-from" aoid="reads-bytes-from">
       <h1>reads-bytes-from</h1>
-      <p>For a candidate execution _execution_, its <em>reads-bytes-from</em> function is a mathematical function mapping events in SharedDataBlockEventSet(_execution_) to Lists of events in SharedDataBlockEventSet(_execution_) that satisfies the following conditions.</p>
+      <p>For a candidate execution _execution_, its <em>reads-bytes-from</em> function is a mathematical function mapping Memory events in SharedDataBlockEventSet(_execution_) to Lists of events in SharedDataBlockEventSet(_execution_) that satisfies the following conditions.</p>
       <ul>
         <li>
           <p>For each ReadSharedMemory or ReadModifyWriteSharedMemory event _R_ in SharedDataBlockEventSet(_execution_), reads-bytes-from(_R_) in _execution_ is a List of length _R_.[[ElementSize]] whose elements are WriteSharedMemory or ReadModifyWriteSharedMemory events _Ws_ such that all of the following are true.</p>
           <ul>
-            <li>Each event _W_ with index _i_ in _Ws_ has _R_.[[ByteIndex]] + _i_ in its range.</li>
+            <li>Each event _W_ with index _i_ in _Ws_ has _R_.[[ByteIndex]] + _i_ in its memory range.</li>
             <li>_R_ is not in _Ws_.</li>
           </ul>
         </li>
@@ -51562,7 +51575,7 @@ THH:mm:ss.sss
 
     <emu-clause id="sec-reads-from">
       <h1>reads-from</h1>
-      <p>For a candidate execution _execution_, its <dfn>reads-from</dfn> Relation is the least Relation on events that satisfies the following.</p>
+      <p>For a candidate execution _execution_, its <dfn>reads-from</dfn> Relation is the least Relation on Memory events that satisfies the following.</p>
       <ul>
         <li>For events _R_ and _W_, _R_ reads-from _W_ in _execution_ if SharedDataBlockEventSet(_execution_) contains both _R_ and _W_, and reads-bytes-from(_R_) in _execution_ contains _W_.</li>
       </ul>
@@ -51570,7 +51583,7 @@ THH:mm:ss.sss
 
     <emu-clause id="sec-host-synchronizes-with">
       <h1>host-synchronizes-with</h1>
-      <p>For a candidate execution _execution_, its <dfn>host-synchronizes-with</dfn> Relation is a host-provided strict partial order on host-specific events that satisfies at least the following.</p>
+      <p>For a candidate execution _execution_, its <dfn>host-synchronizes-with</dfn> Relation is a host-provided strict partial order on host-specific Memory events that satisfies at least the following.</p>
       <ul>
         <li>If _E_ host-synchronizes-with _D_ in _execution_, HostEventSet(_execution_) contains _E_ and _D_.</li>
         <li>There is no cycle in the union of host-synchronizes-with and is-agent-order-before in _execution_.</li>
@@ -51586,10 +51599,10 @@ THH:mm:ss.sss
 
     <emu-clause id="sec-synchronizes-with">
       <h1>synchronizes-with</h1>
-      <p>For a candidate execution _execution_, its <dfn>synchronizes-with</dfn> Relation is the least Relation on events that satisfies the following.</p>
+      <p>For a candidate execution _execution_, its <dfn>synchronizes-with</dfn> Relation is the least Relation on Memory events that satisfies the following.</p>
       <ul>
         <li>
-          For events _R_ and _W_, _W_ synchronizes-with _R_ in _execution_ if _R_ reads-from _W_ in _execution_, _R_.[[Order]] is ~seq-cst~, _W_.[[Order]] is ~seq-cst~, and _R_ and _W_ have equal ranges.
+          For events _R_ and _W_, _W_ synchronizes-with _R_ in _execution_ if _R_ reads-from _W_ in _execution_, _R_.[[Order]] is ~seq-cst~, _W_.[[Order]] is ~seq-cst~, and _R_ and _W_ have equal memory ranges.
         </li>
         <li>
           For each element _eventsRecord_ of _execution_.[[EventsRecords]], the following is true.
@@ -51609,7 +51622,7 @@ THH:mm:ss.sss
       </emu-note>
 
       <emu-note>
-        <p>In a candidate execution _execution_, not all ~seq-cst~ events related by reads-from are related by synchronizes-with. Only events that also have equal ranges are related by synchronizes-with.</p>
+        <p>In a candidate execution _execution_, not all ~seq-cst~ events related by reads-from are related by synchronizes-with. Only events that also have equal memory ranges are related by synchronizes-with.</p>
       </emu-note>
 
       <emu-note>
@@ -51619,7 +51632,7 @@ THH:mm:ss.sss
 
     <emu-clause id="sec-happens-before">
       <h1>happens-before</h1>
-      <p>For a candidate execution _execution_, its <dfn>happens-before</dfn> Relation is the least Relation on events that satisfies the following.</p>
+      <p>For a candidate execution _execution_, its <dfn>happens-before</dfn> Relation is the least Relation on Memory events that satisfies the following.</p>
 
       <ul>
         <li>
@@ -51627,7 +51640,7 @@ THH:mm:ss.sss
           <ul>
             <li>_E_ is-agent-order-before _D_ in _execution_.</li>
             <li>_E_ synchronizes-with _D_ in _execution_.</li>
-            <li>SharedDataBlockEventSet(_execution_) contains both _E_ and _D_, _E_.[[Order]] is ~init~, and _E_ and _D_ have overlapping ranges.</li>
+            <li>SharedDataBlockEventSet(_execution_) contains both _E_ and _D_, _E_.[[Order]] is ~init~, and _E_ and _D_ have overlapping memory ranges.</li>
             <li>There is an event _F_ such that _E_ happens-before _F_ and _F_ happens-before _D_ in _execution_.</li>
           </ul>
         </li>
@@ -51670,7 +51683,7 @@ THH:mm:ss.sss
           1. For each element _W_ of _Ws_, do
             1. If _R_ happens-before _W_ in _execution_, then
               1. Return *false*.
-            1. If there exists a WriteSharedMemory or ReadModifyWriteSharedMemory event _V_ that has _byteLocation_ in its range such that _W_ happens-before _V_ in _execution_ and _V_ happens-before _R_ in _execution_, then
+            1. If there exists a WriteSharedMemory or ReadModifyWriteSharedMemory event _V_ that has _byteLocation_ in its memory range such that _W_ happens-before _V_ in _execution_ and _V_ happens-before _R_ in _execution_, then
               1. Return *false*.
             1. Set _byteLocation_ to _byteLocation_ + 1.
         1. Return *true*.
@@ -51684,38 +51697,38 @@ THH:mm:ss.sss
         1. For each ReadSharedMemory or ReadModifyWriteSharedMemory event _R_ of SharedDataBlockEventSet(_execution_), do
           1. If _R_.[[NoTear]] is *true*, then
             1. Assert: The remainder of dividing _R_.[[ByteIndex]] by _R_.[[ElementSize]] is 0.
-            1. For each event _W_ such that _R_ reads-from _W_ in _execution_ and _W_.[[NoTear]] is *true*, do
-              1. If _R_ and _W_ have equal ranges and there exists an event _V_ such that _V_ and _W_ have equal ranges, _V_.[[NoTear]] is *true*, _W_ and _V_ are not the same Shared Data Block event, and _R_ reads-from _V_ in _execution_, then
+            1. For each Memory event _W_ such that _R_ reads-from _W_ in _execution_ and _W_.[[NoTear]] is *true*, do
+              1. If _R_ and _W_ have equal memory ranges and there exists a Memory event _V_ such that _V_ and _W_ have equal memory ranges, _V_.[[NoTear]] is *true*, _W_ and _V_ are not the same Shared Data Block event, and _R_ reads-from _V_ in _execution_, then
                 1. Return *false*.
         1. Return *true*.
       </emu-alg>
 
       <emu-note>
-        <p>An event's [[NoTear]] field is *true* when that event was introduced via accessing an integer TypedArray, and *false* when introduced via accessing a floating point TypedArray or DataView.</p>
+        <p>A Shared Data Block event's [[NoTear]] field is *true* when that event was introduced via accessing an integer TypedArray, and *false* when introduced via accessing a floating point TypedArray or DataView.</p>
         <p>Intuitively, this requirement says when a memory range is accessed in an aligned fashion via an integer TypedArray, a single write event on that range must "win" when in a data race with other write events with equal ranges. More precisely, this requirement says an aligned read event cannot read a value composed of bytes from multiple, different write events all with equal ranges. It is possible, however, for an aligned read event to read from multiple write events with overlapping ranges.</p>
       </emu-note>
     </emu-clause>
 
     <emu-clause id="sec-memory-order">
       <h1>Sequentially Consistent Atomics</h1>
-      <p>For a candidate execution _execution_, <dfn>is-memory-order-before</dfn> is a strict total order of all events in EventSet(_execution_) that satisfies the following.</p>
+      <p>For a candidate execution _execution_, <dfn>is-memory-order-before</dfn> is a strict total order of all Memory events in EventSet(_execution_) that satisfies the following.</p>
       <ul>
         <li>For events _E_ and _D_, _E_ is-memory-order-before _D_ in _execution_ if _E_ happens-before _D_ in _execution_.</li>
         <li>
           <p>For events _R_ and _W_ such that _R_ reads-from _W_ in _execution_, there is no WriteSharedMemory or ReadModifyWriteSharedMemory event _V_ in SharedDataBlockEventSet(_execution_) such that _V_.[[Order]] is ~seq-cst~, _W_ is-memory-order-before _V_ in _execution_, _V_ is-memory-order-before _R_ in _execution_, and any of the following conditions are true.</p>
           <ul>
-            <li>_W_ synchronizes-with _R_ in _execution_, and _V_ and _R_ have equal ranges.</li>
-            <li>_W_ happens-before _R_ and _V_ happens-before _R_ in _execution_, _W_.[[Order]] is ~seq-cst~, and _W_ and _V_ have equal ranges.</li>
-            <li>_W_ happens-before _R_ and _W_ happens-before _V_ in _execution_, _R_.[[Order]] is ~seq-cst~, and _V_ and _R_ have equal ranges.</li>
+            <li>_W_ synchronizes-with _R_ in _execution_, and _V_ and _R_ have equal memory ranges.</li>
+            <li>_W_ happens-before _R_ and _V_ happens-before _R_ in _execution_, _W_.[[Order]] is ~seq-cst~, and _W_ and _V_ have equal memory ranges.</li>
+            <li>_W_ happens-before _R_ and _W_ happens-before _V_ in _execution_, _R_.[[Order]] is ~seq-cst~, and _V_ and _R_ have equal memory ranges.</li>
           </ul>
           <emu-note>
-            <p>This clause additionally constrains ~seq-cst~ events on equal ranges.</p>
+            <p>This clause additionally constrains ~seq-cst~ events on equal memory ranges.</p>
           </emu-note>
         </li>
         <li>
-          <p>For each WriteSharedMemory or ReadModifyWriteSharedMemory event _W_ in SharedDataBlockEventSet(_execution_), if _W_.[[Order]] is ~seq-cst~, then it is not the case that there is an infinite number of ReadSharedMemory or ReadModifyWriteSharedMemory events in SharedDataBlockEventSet(_execution_) with equal range that is memory-order before _W_.</p>
+          <p>For each WriteSharedMemory or ReadModifyWriteSharedMemory event _W_ in SharedDataBlockEventSet(_execution_), if _W_.[[Order]] is ~seq-cst~, then it is not the case that there is an infinite number of ReadSharedMemory or ReadModifyWriteSharedMemory events in SharedDataBlockEventSet(_execution_) with equal memory range that is memory-order before _W_.</p>
           <emu-note>
-            <p>This clause together with the forward progress guarantee on agents ensure the liveness condition that ~seq-cst~ writes become visible to ~seq-cst~ reads with equal range in finite time.</p>
+            <p>This clause together with the forward progress guarantee on agents ensure the liveness condition that ~seq-cst~ <emu-xref href="#sec-memory-model-fundamentals">writes</emu-xref> become visible to ~seq-cst~ <emu-xref href="#sec-memory-model-fundamentals">reads</emu-xref> with equal memory range in finite time.</p>
           </emu-note>
         </li>
       </ul>
@@ -51747,7 +51760,7 @@ THH:mm:ss.sss
     <emu-alg>
       1. If _E_ and _D_ are not the same Shared Data Block event, then
         1. If it is not the case that both _E_ happens-before _D_ in _execution_ and _D_ happens-before _E_ in _execution_, then
-          1. If _E_ and _D_ are both WriteSharedMemory or ReadModifyWriteSharedMemory events and _E_ and _D_ do not have disjoint ranges, then
+          1. If _E_ and _D_ are both WriteSharedMemory or ReadModifyWriteSharedMemory events and _E_ and _D_ do not have disjoint memory ranges, then
             1. Return *true*.
           1. If _E_ reads-from _D_ in _execution_ or _D_ reads-from _E_ in _execution_, then
             1. Return *true*.
@@ -51762,7 +51775,7 @@ THH:mm:ss.sss
       1. If _E_ and _D_ are in a <emu-xref href="#sec-races">race</emu-xref> in _execution_, then
         1. If _E_.[[Order]] is not ~seq-cst~ or _D_.[[Order]] is not ~seq-cst~, then
           1. Return *true*.
-        1. If _E_ and _D_ have overlapping ranges, then
+        1. If _E_ and _D_ have overlapping memory ranges, then
           1. Return *true*.
       1. Return *false*.
     </emu-alg>
@@ -51785,13 +51798,13 @@ THH:mm:ss.sss
 
     <emu-note>
       <p>The following are guidelines for ECMAScript implementers writing compiler transformations for programs using shared memory.</p>
-      <p>It is desirable to allow most program transformations that are valid in a single-agent setting in a multi-agent setting, to ensure that the performance of each agent in a multi-agent program is as good as it would be in a single-agent setting. Frequently these transformations are hard to judge. We outline some rules about program transformations that are intended to be taken as normative (in that they are implied by the memory model or stronger than what the memory model implies) but which are likely not exhaustive. These rules are intended to apply to program transformations that precede the introductions of the events that make up the is-agent-order-before Relation.</p>
+      <p>It is desirable to allow most program transformations that are valid in a single-agent setting in a multi-agent setting, to ensure that the performance of each agent in a multi-agent program is as good as it would be in a single-agent setting. Frequently these transformations are hard to judge. We outline some rules about program transformations that are intended to be taken as normative (in that they are implied by the memory model or stronger than what the memory model implies) but which are likely not exhaustive. These rules are intended to apply to program transformations that precede the introductions of the Memory events that make up the is-agent-order-before Relation.</p>
       <p>Let an <dfn variants="agent-order slices">agent-order slice</dfn> be the subset of the is-agent-order-before Relation pertaining to a single agent.</p>
       <p>Let <dfn>possible read values</dfn> of a read event be the set of all values of ValueOfReadEvent for that event across all valid executions.</p>
       <p>Any transformation of an agent-order slice that is valid in the absence of shared memory is valid in the presence of shared memory, with the following exceptions.</p>
       <ul>
         <li>
-          <p><em>Atomics are carved in stone</em>: Program transformations must not cause the ~seq-cst~ events in an agent-order slice to be reordered with its ~unordered~ operations, nor its ~seq-cst~ operations to be reordered with each other, nor may a program transformation remove a ~seq-cst~ operation from the is-agent-order-before Relation.</p>
+          <p><em>Atomics are carved in stone</em>: Program transformations must not cause any Shared Data Block events whose [[Order]] is ~seq-cst~ to be removed from the is-agent-order-before Relation, nor to be reordered with respect to each other, nor to be reordered inside an agent-order slice with respect to events whose [[Order]] is ~unordered~.</p>
           <p>(In practice, the prohibition on reorderings forces a compiler to assume that every ~seq-cst~ operation is a synchronization and included in the final is-memory-order-before Relation, which it would usually have to assume anyway in the absence of inter-agent program analysis. It also forces the compiler to assume that every call where the callee's effects on the memory-order are unknown may contain ~seq-cst~ operations.)</p>
         </li>
         <li>
@@ -51827,7 +51840,7 @@ THH:mm:ss.sss
         <li>Lock-free atomic read-modify-write accesses compile to a full fence, an atomic read-modify-write instruction sequence, and a full fence.</li>
         <li>Non-lock-free atomics compile to a spinlock acquire, a full fence, a series of non-atomic load and store instructions, a full fence, and a spinlock release.</li>
       </ul>
-      <p>That mapping is correct so long as an atomic operation on an address range does not race with a non-atomic write or with an atomic operation of different size. However, that is all we need: the memory model effectively demotes the atomic operations involved in a race to non-atomic status. On the other hand, the naive mapping is quite strong: it allows atomic operations to be used as sequentially consistent fences, which the memory model does not actually guarantee.</p>
+      <p>That mapping is correct so long as an atomic operation on a memory range does not race with a non-atomic write or with an atomic operation of different size. However, that is all we need: the memory model effectively demotes the atomic operations involved in a race to non-atomic status. On the other hand, the naive mapping is quite strong: it allows atomic operations to be used as sequentially consistent fences, which the memory model does not actually guarantee.</p>
       <p>Local improvements to those basic patterns are also allowed, subject to the constraints of the memory model. For example:</p>
       <ul>
         <li>There are obvious platform-dependent improvements that remove redundant fences. For example, on x86 the fences around lock-free atomic loads and stores can always be omitted except for the fence following a store, and no fence is needed for lock-free read-modify-write instructions, as these all use <code>LOCK</code>-prefixed instructions. On many platforms there are fences of several strengths, and weaker fences can be used in certain contexts without destroying sequential consistency.</li>
