@@ -20228,7 +20228,7 @@
         <emu-grammar>UnaryExpression : `typeof` UnaryExpression</emu-grammar>
         <emu-alg>
           1. Let _val_ be ? Evaluation of |UnaryExpression|.
-          1. Perform @@Trace(~unarypre~, *"typeof"*, _val_)
+          1. Perform @@Trace(~unarypre~, *"typeof"*, _val_).
           1. If _val_ is a Reference Record, then
             1. If IsUnresolvableReference(_val_) is *true*, return @@Trace(~unarypre~, *"typeof"*, _val_, returning *"undefined"*).
           1. Set _val_ to ? GetValue(_val_).
