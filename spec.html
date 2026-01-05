@@ -20212,7 +20212,7 @@
           1. Let _expr_ be ? Evaluation of |UnaryExpression|.
           1. Let _v_ be ? GetValue(_expr_).
           1. Perform @@Trace(~unarypre~, *"void"*, _v_).
-          1. Return @@Trace(~unary~, *"void"*, _b_, returning *undefined*).
+          1. Return @@Trace(~unary~, *"void"*, _v_, returning *undefined*).
         </emu-alg>
         <emu-note>
           <p>GetValue must be called even though its value is not used because it may have observable side-effects.</p>
@@ -20616,7 +20616,10 @@
         1. Let _lVal_ be ? GetValue(_lRef_).
         1. Let _rRef_ be ? Evaluation of |RelationalExpression|.
         1. Let _rVal_ be ? GetValue(_rRef_).
-        1. Return ? IsLooselyEqual(_rVal_, _lVal_).
+        1. Perform @@Trace(~binarypre~, *"=="*, _lVal_, _rVal_).
+        1. Let _r_ be IsLooselyEqual(_rVal_, _lVal_).
+        1. Perform @@Trace(~binary~, *"=="*, _lVal_, _rVal_, _r_).
+        1. Return ? _r_.
       </emu-alg>
       <emu-grammar>EqualityExpression : EqualityExpression `!=` RelationalExpression</emu-grammar>
       <emu-alg>
@@ -20624,8 +20627,14 @@
         1. Let _lVal_ be ? GetValue(_lRef_).
         1. Let _rRef_ be ? Evaluation of |RelationalExpression|.
         1. Let _rVal_ be ? GetValue(_rRef_).
+        1. Perform @@Trace(~binarypre~, *"!="*, _lVal_, _rVal_).
         1. Let _r_ be ? IsLooselyEqual(_rVal_, _lVal_).
-        1. If _r_ is *true*, return *false*. Otherwise, return *true*.
+        1. If _r_ is *true*, then
+          1. Perform @@Trace(~binary~, *"!="*, _lVal_, _rVal_, *false*).
+          1. Return *false*.
+        1. Else,
+          1. Perform @@Trace(~binary~, *"!="*, _lVal_, _rVal_, *true*).
+          1. Return *true*.
       </emu-alg>
       <emu-grammar>EqualityExpression : EqualityExpression `===` RelationalExpression</emu-grammar>
       <emu-alg>
@@ -20633,7 +20642,10 @@
         1. Let _lVal_ be ? GetValue(_lRef_).
         1. Let _rRef_ be ? Evaluation of |RelationalExpression|.
         1. Let _rVal_ be ? GetValue(_rRef_).
-        1. Return IsStrictlyEqual(_rVal_, _lVal_).
+        1. Perform @@Trace(~binarypre~, *"==="*, _lVal_, _rVal_).
+        1. Let _r_ be IsStrictlyEqual(_rVal_, _lVal_).
+        1. Perform @@Trace(~binary~, *"==="*, _lVal_, _rVal_, _r_).
+        1. Return _r_.
       </emu-alg>
       <emu-grammar>EqualityExpression : EqualityExpression `!==` RelationalExpression</emu-grammar>
       <emu-alg>
@@ -20641,8 +20653,14 @@
         1. Let _lVal_ be ? GetValue(_lRef_).
         1. Let _rRef_ be ? Evaluation of |RelationalExpression|.
         1. Let _rVal_ be ? GetValue(_rRef_).
+        1. Perform @@Trace(~binarypre~, *"!=="*, _lVal_, _rVal_).
         1. Let _r_ be IsStrictlyEqual(_rVal_, _lVal_).
-        1. If _r_ is *true*, return *false*. Otherwise, return *true*.
+        1. If _r_ is *true*, then
+          1. Perform @@Trace(~binary~, *"!=="*, _lVal_, _rVal_, *false*).
+          1. Return *false*.
+        1. Else,
+          1. Perform @@Trace(~binary~, *"!=="*, _lVal_, _rVal_, *true*).
+          1. Return *true*.
       </emu-alg>
       <emu-note>
         <p>Given the above definition of equality:</p>
