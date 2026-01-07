@@ -20058,13 +20058,16 @@
         <emu-grammar>UpdateExpression : LeftHandSideExpression `++`</emu-grammar>
         <emu-alg>
           1. Let _lhs_ be ? Evaluation of |LeftHandSideExpression|.
-          1. Let _oldValue_ be ? ToNumeric(? GetValue(_lhs_)).
+          1. Let _v_ be ? GetValue(_lhs_).
+          1. Perform @@Trace(~unarypre~, *"postfix++"*, _v_).
+          1. Let _oldValue_ be ? ToNumeric(_v_).
           1. If _oldValue_ is a Number, then
             1. Let _newValue_ be Number::add(_oldValue_, *1*<sub>𝔽</sub>).
           1. Else,
             1. Assert: _oldValue_ is a BigInt.
             1. Let _newValue_ be BigInt::add(_oldValue_, *1*<sub>ℤ</sub>).
           1. Perform ? PutValue(_lhs_, _newValue_).
+          1. Perform @@Trace(~unary~, *"postfix++"*, _v_, _newValue_).
           1. Return _oldValue_.
         </emu-alg>
       </emu-clause>
@@ -20078,13 +20081,16 @@
         <emu-grammar>UpdateExpression : LeftHandSideExpression `--`</emu-grammar>
         <emu-alg>
           1. Let _lhs_ be ? Evaluation of |LeftHandSideExpression|.
-          1. Let _oldValue_ be ? ToNumeric(? GetValue(_lhs_)).
+          1. Let _v_ be ? GetValue(_lhs_).
+          1. Perform @@Trace(~unarypre~, *"postfix--"*, _v_).
+          1. Let _oldValue_ be ? ToNumeric(_v_).
           1. If _oldValue_ is a Number, then
             1. Let _newValue_ be Number::subtract(_oldValue_, *1*<sub>𝔽</sub>).
           1. Else,
             1. Assert: _oldValue_ is a BigInt.
             1. Let _newValue_ be BigInt::subtract(_oldValue_, *1*<sub>ℤ</sub>).
           1. Perform ? PutValue(_lhs_, _newValue_).
+          1. Perform @@Trace(~unary~, *"postfix--"*, _v_, _newValue_).
           1. Return _oldValue_.
         </emu-alg>
       </emu-clause>
@@ -20098,13 +20104,16 @@
         <emu-grammar>UpdateExpression : `++` UnaryExpression</emu-grammar>
         <emu-alg>
           1. Let _expr_ be ? Evaluation of |UnaryExpression|.
-          1. Let _oldValue_ be ? ToNumeric(? GetValue(_expr_)).
+          1. Let _v_ be ? GetValue(_expr_).
+          1. Perform @@Trace(~unarypre~, *"prefix++"*, _v_).
+          1. Let _oldValue_ be ? ToNumeric(_v_).
           1. If _oldValue_ is a Number, then
             1. Let _newValue_ be Number::add(_oldValue_, *1*<sub>𝔽</sub>).
           1. Else,
             1. Assert: _oldValue_ is a BigInt.
             1. Let _newValue_ be BigInt::add(_oldValue_, *1*<sub>ℤ</sub>).
           1. Perform ? PutValue(_expr_, _newValue_).
+          1. Perform @@Trace(~unary~, *"prefix++"*, _v_, _newValue_).
           1. Return _newValue_.
         </emu-alg>
       </emu-clause>
@@ -20118,13 +20127,16 @@
         <emu-grammar>UpdateExpression : `--` UnaryExpression</emu-grammar>
         <emu-alg>
           1. Let _expr_ be ? Evaluation of |UnaryExpression|.
-          1. Let _oldValue_ be ? ToNumeric(? GetValue(_expr_)).
+          1. Let _v_ be ? GetValue(_expr_).
+          1. Perform @@Trace(~unarypre~, *"prefix--"*, _v_).
+          1. Let _oldValue_ be ? ToNumeric(_v_).
           1. If _oldValue_ is a Number, then
             1. Let _newValue_ be Number::subtract(_oldValue_, *1*<sub>𝔽</sub>).
           1. Else,
             1. Assert: _oldValue_ is a BigInt.
             1. Let _newValue_ be BigInt::subtract(_oldValue_, *1*<sub>ℤ</sub>).
           1. Perform ? PutValue(_expr_, _newValue_).
+          1. Perform @@Trace(~unary~, *"prefix--"*, _v_, _newValue_).
           1. Return _newValue_.
         </emu-alg>
       </emu-clause>
