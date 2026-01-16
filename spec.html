@@ -6560,7 +6560,10 @@
       <emu-alg>
         1. If _newTarget_ is not present, set _newTarget_ to _F_.
         1. If _argumentsList_ is not present, set _argumentsList_ to a new empty List.
-        1. Return ? <emu-meta effects="user-code">_F_.[[Construct]]</emu-meta>(_argumentsList_, _newTarget_).
+        1. Perform @@Trace(~invokefunpre~, _F_, _newTarget_, _argumentsList_).
+        1. Let _r_ be <emu-meta effects="user-code">_F_.[[Construct]]</emu-meta>(_argumentsList_, _newTarget_).
+        1. Perform @@Trace(~invokefun~, _F_, _newTarget_, _argumentsList_, _r_).
+        1. Return ? _r_.
       </emu-alg>
       <emu-note>
         <p>If _newTarget_ is not present, this operation is equivalent to: `new F(...argumentsList)`</p>
