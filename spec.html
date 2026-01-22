@@ -20283,9 +20283,10 @@
         <emu-grammar>UnaryExpression : `+` UnaryExpression</emu-grammar>
         <emu-alg>
           1. Let _expr_ be ? Evaluation of |UnaryExpression|.
-          1. Perform @@Trace(~unarypre~, *"+"*, _expr_).
-          1. Let _r_ be ? ToNumber(? GetValue(_expr_)).
-          1. Return @@Trace(~unary~, *"+"*, _expr_, returning _r_).
+          1. Let _v_ be ? GetValue(_expr_).
+          1. Perform @@Trace(~unarypre~, *"+"*, _v_).
+          1. Let _r_ be ? ToNumber(_v_).
+          1. Return @@Trace(~unary~, *"+"*, _v_, returning _r_).
         </emu-alg>
       </emu-clause>
     </emu-clause>
@@ -20301,13 +20302,14 @@
         <emu-grammar>UnaryExpression : `-` UnaryExpression</emu-grammar>
         <emu-alg>
           1. Let _expr_ be ? Evaluation of |UnaryExpression|.
-          1. Perform @@Trace(~unarypre~, *"-"*, _expr_).
-          1. Let _oldValue_ be ? ToNumeric(? GetValue(_expr_)).
+          1. Let _v_ be ? GetValue(_expr_).
+          1. Perform @@Trace(~unarypre~, *"-"*, _v_).
+          1. Let _oldValue_ be ? ToNumeric(_v_).
           1. If _oldValue_ is a Number, then
-            1. Return @@Trace(~unary~, *"-"*, _expr_, returning Number::unaryMinus(_oldValue_)).
+            1. Return @@Trace(~unary~, *"-"*, _v_, returning Number::unaryMinus(_oldValue_)).
           1. Else,
             1. Assert: _oldValue_ is a BigInt.
-            1. Return @@Trace(~unary~, *"-"*, _expr_, returning BigInt::unaryMinus(_oldValue_)).
+            1. Return @@Trace(~unary~, *"-"*, _v_, returning BigInt::unaryMinus(_oldValue_)).
         </emu-alg>
       </emu-clause>
     </emu-clause>
@@ -20320,13 +20322,14 @@
         <emu-grammar>UnaryExpression : `~` UnaryExpression</emu-grammar>
         <emu-alg>
           1. Let _expr_ be ? Evaluation of |UnaryExpression|.
-          1. Perform @@Trace(~unarypre~, *"~"*, _expr_).
-          1. Let _oldValue_ be ? ToNumeric(? GetValue(_expr_)).
+          1. Let _v_ be ? GetValue(_expr_).
+          1. Perform @@Trace(~unarypre~, *"~"*, _v_).
+          1. Let _oldValue_ be ? ToNumeric(_v_).
           1. If _oldValue_ is a Number, then
-            1. Return @@Trace(~unary~, *"~"*, _expr_, returning Number::bitwiseNOT(_oldValue_)).
+            1. Return @@Trace(~unary~, *"~"*, _v_, returning Number::bitwiseNOT(_oldValue_)).
           1. Else,
             1. Assert: _oldValue_ is a BigInt.
-            1. Return @@Trace(~unary~, *"~"*, _expr_, returning BigInt::bitwiseNOT(_oldValue_)).
+            1. Return @@Trace(~unary~, *"~"*, _v_, returning BigInt::bitwiseNOT(_oldValue_)).
         </emu-alg>
       </emu-clause>
     </emu-clause>
@@ -20339,8 +20342,9 @@
         <emu-grammar>UnaryExpression : `!` UnaryExpression</emu-grammar>
         <emu-alg>
           1. Let _expr_ be ? Evaluation of |UnaryExpression|.
-          1. Perform @@Trace(~unarypre~, *"!"*, _expr_).
-          1. Let _oldValue_ be ToBoolean(? GetValue(_expr_)).
+          1. Let _v_ be ? GetValue(_expr_).
+          1. Perform @@Trace(~unarypre~, *"!"*, _v_).
+          1. Let _oldValue_ be ToBoolean(_v_).
           1. If _oldValue_ is *true*, return @@Trace(~unary~, *"!"*, _expr_, returning *false*).
           1. Return @@Trace(~unary~, *"!"*, _expr_, returning *true*).
         </emu-alg>
