@@ -4559,7 +4559,6 @@
         </dl>
         <emu-alg>
           1. Assert: IsPropertyReference(_V_) is *true*.
-          1. Perform @@Trace(~read~, *"this"*).
           1. If IsSuperReference(_V_) is *true*, return _V_.[[ThisValue]]; otherwise return _V_.[[Base]].
         </emu-alg>
       </emu-clause>
@@ -10955,6 +10954,7 @@
           </dl>
           <emu-alg>
             1. Assert: _envRec_.[[ThisBindingStatus]] is not ~lexical~.
+            1. Perform @@Trace(~read~, *"this"*).
             1. If _envRec_.[[ThisBindingStatus]] is ~uninitialized~, throw a *ReferenceError* exception.
             1. Return _envRec_.[[ThisValue]].
           </emu-alg>
@@ -11266,6 +11266,7 @@
             <dd>a Global Environment Record _envRec_</dd>
           </dl>
           <emu-alg>
+            1. Perform @@Trace(~read~, *"this"*).
             1. Return _envRec_.[[GlobalThisValue]].
           </emu-alg>
         </emu-clause>
@@ -11495,6 +11496,7 @@
             <dd>a Module Environment Record _envRec_</dd>
           </dl>
           <emu-alg>
+            1. Perform @@Trace(~read~, *"this"*).
             1. Return *undefined*.
           </emu-alg>
         </emu-clause>
