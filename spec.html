@@ -23107,7 +23107,10 @@
         1. Assert: _C_ is an instance of the production <emu-grammar>CaseClause : `case` Expression `:` StatementList?</emu-grammar>.
         1. Let _exprRef_ be ? Evaluation of the |Expression| of _C_.
         1. Let _clauseSelector_ be ? GetValue(_exprRef_).
-        1. Return IsStrictlyEqual(_input_, _clauseSelector_).
+        1. Perform @@Trace(~binarypre-switch~, *"==="*, _input_, _clauseSelector_).
+        1. Let _r_ be IsStrictlyEqual(_input_, _clauseSelector_).
+        1. Perform @@Trace(~binary-switch~, *"==="*, _input_, _clauseSelector_, _r_).
+        1. Return _r_.
       </emu-alg>
       <emu-note>
         <p>This operation does not execute _C_'s |StatementList| (if any). The |CaseBlock| algorithm uses its return value to determine which |StatementList| to start executing.</p>
