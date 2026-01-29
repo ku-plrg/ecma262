@@ -20204,9 +20204,10 @@
             1. If _ref_.[[ReferencedName]] is not a property key, then
               1. Set _ref_.[[ReferencedName]] to ? ToPropertyKey(_ref_.[[ReferencedName]]).
             1. Perform @@Trace(~binarypre~, *"delete"*, _ref_.[[Base]], _ref_.[[ReferencedName]]).
-            1. Let _deleteStatus_ be ? <emu-meta effects="user-code">_baseObj_.[[Delete]]</emu-meta>(_ref_.[[ReferencedName]]).
+            1. Let _deleteStatusComp_ be <emu-meta effects="user-code">_baseObj_.[[Delete]]</emu-meta>(_ref_.[[ReferencedName]]).
+            1. Perform @@Trace(~binary~, *"delete"*, _ref_.[[Base]], _ref_.[[ReferencedName]], _deleteStatusComp_).
+            1. Let _deleteStatus_ be ? _deleteStatusComp_.
             1. If _deleteStatus_ is *false* and _ref_.[[Strict]] is *true*, throw a *TypeError* exception.
-            1. Perform @@Trace(~binary~, *"delete"*, _ref_.[[Base]], _ref_.[[ReferencedName]], _deleteStatus_).
             1. Return _deleteStatus_.
           1. Else,
             1. Let _base_ be _ref_.[[Base]].
